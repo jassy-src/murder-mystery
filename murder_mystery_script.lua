@@ -1,4 +1,115 @@
 -- Roblox Murder Mystery Script - Hybrid Solara/Rayfield UI
+print("[jassy's mm2] boot")
+
+local function _showInjectedPing()
+    pcall(function()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        if not lp then return end
+
+        local pg = lp:WaitForChild("PlayerGui")
+        local sg = pg:FindFirstChild("JassyMM2_Ping")
+        if not sg then
+            sg = Instance.new("ScreenGui")
+            sg.Name = "JassyMM2_Ping"
+            sg.ResetOnSpawn = false
+            sg.Parent = pg
+        end
+
+        if sg:FindFirstChild("Label") then
+            return
+        end
+
+        local lbl = Instance.new("TextLabel")
+        lbl.Name = "Label"
+        lbl.BackgroundTransparency = 0.35
+        lbl.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+        lbl.BorderSizePixel = 0
+        lbl.Size = UDim2.new(0, 220, 0, 26)
+        lbl.Position = UDim2.new(0, 12, 0, 12)
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextSize = 14
+        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lbl.Text = "♡ jassy's mm2 injected ♡"
+        lbl.Parent = sg
+
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 10)
+        c.Parent = lbl
+    end)
+end
+
+_showInjectedPing()
+
+local function _showError(title, msg)
+    pcall(function()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        local parent = game:GetService("CoreGui")
+        if lp then
+            local pg = lp:FindFirstChild("PlayerGui")
+            if pg then
+                parent = pg
+            end
+        end
+
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "JassyMM2_Error"
+        sg.ResetOnSpawn = false
+        sg.Parent = parent
+
+        local f = Instance.new("Frame")
+        f.Size = UDim2.new(0, 420, 0, 140)
+        f.Position = UDim2.new(0.5, -210, 0.2, 0)
+        f.BackgroundColor3 = Color3.fromRGB(30, 10, 20)
+        f.BorderSizePixel = 0
+        f.Parent = sg
+
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 12)
+        c.Parent = f
+
+        local s = Instance.new("UIStroke")
+        s.Thickness = 1
+        s.Transparency = 0.4
+        s.Color = Color3.fromRGB(255, 105, 180)
+        s.Parent = f
+
+        local t = Instance.new("TextLabel")
+        t.BackgroundTransparency = 1
+        t.Size = UDim2.new(1, -20, 0, 28)
+        t.Position = UDim2.new(0, 10, 0, 8)
+        t.Font = Enum.Font.GothamBold
+        t.TextSize = 18
+        t.TextXAlignment = Enum.TextXAlignment.Left
+        t.TextColor3 = Color3.fromRGB(255, 255, 255)
+        t.Text = tostring(title or "Error")
+        t.Parent = f
+
+        local b = Instance.new("TextLabel")
+        b.BackgroundTransparency = 1
+        b.Size = UDim2.new(1, -20, 1, -46)
+        b.Position = UDim2.new(0, 10, 0, 40)
+        b.Font = Enum.Font.Gotham
+        b.TextSize = 14
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.TextYAlignment = Enum.TextYAlignment.Top
+        b.TextWrapped = true
+        b.TextColor3 = Color3.fromRGB(255, 220, 235)
+        b.Text = tostring(msg or "")
+        b.Parent = f
+    end)
+end
+
+local function setToggleVisual(track, knob, enabled)
+    if enabled then
+        track.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+        knob.Position = UDim2.new(0, 38, 0.5, -7)
+    else
+        track.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+        knob.Position = UDim2.new(0, 2, 0.5, -7)
+    end
+end
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -26,11 +137,14 @@ local function uiStroke(inst, thickness, transparency)
 end
 
 -- Play opening sound effect
+local SoundService = game:GetService("SoundService")
 local OpeningSound = Instance.new("Sound")
-OpeningSound.SoundId = "rbxassetid://132529299748496" -- Your opening sound effect
+OpeningSound.SoundId = "rbxassetid://132529299748496"
 OpeningSound.Volume = 0.5
 OpeningSound.Parent = SoundService
-OpeningSound:Play()
+pcall(function()
+    OpeningSound:Play()
+end)
 
 -- Custom UI System - Hybrid Solara/Rayfield Style
 local ScreenGui = Instance.new("ScreenGui")
@@ -521,6 +635,10 @@ local ESPFolder = Instance.new("Folder")
 ESPFolder.Name = "MM2_ESP_Highlights"
 ESPFolder.Parent = game.CoreGui
 
+-- Initialize toggle visuals
+setToggleVisual(ESPTrack, ESPKnob, getgenv().ESPEnabled)
+setToggleVisual(LockTrack, LockKnob, getgenv().LockOnEnabled)
+
 -- Opening Animation
 MainWindow.Size = UDim2.new(0, 0, 0, 0)
 MainWindow.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -892,3 +1010,5 @@ end)
 
 print("🌸 Hybrid MM2 Script Loaded!")
 print("Menu Key: " .. getgenv().MenuKey .. " | Lock-On Key: " .. getgenv().LockOnKey)
+
+return
