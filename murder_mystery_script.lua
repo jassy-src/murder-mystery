@@ -46,6 +46,15 @@ end
 -- Activate anti-cheat bypass
 bypassAntiCheat()
 
+-- GUI Keybind (K key)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        if Rayfield then
+            Rayfield:Toggle()
+        end
+    end
+end)
+
 local Window = Rayfield:CreateWindow({
     Name = "🔫 MM2 Script 🔫",
     LoadingTitle = "⚡ MM2 Script ⚡",
@@ -86,6 +95,15 @@ ESPTab:CreateToggle({
     end,
 })
 
+-- Gun ESP Toggle 🔫
+ESPTab:CreateToggle({
+    Name = "🔫 Gun ESP",
+    CurrentValue = false,
+    Callback = function(value)
+        getgenv().GunESPEnabled = value
+    end,
+})
+
 -- ESP Folder for Highlights
 local ESPFolder = Instance.new("Folder")
 ESPFolder.Name = "MM2_RoleESP_Highlights"
@@ -95,6 +113,11 @@ ESPFolder.Parent = game.CoreGui
 local NameESPFolder = Instance.new("Folder")
 NameESPFolder.Name = "MM2_NameESP"
 NameESPFolder.Parent = game.CoreGui
+
+-- Gun ESP Folder
+local GunESPFolder = Instance.new("Folder")
+GunESPFolder.Name = "MM2_GunESP"
+GunESPFolder.Parent = game.CoreGui
 
 -- Track Player Function
 local function TrackPlayer(player)
@@ -205,8 +228,115 @@ game.Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
+-- Gun ESP Function
+local function TrackGun(gun)
+    -- Check if we're already tracking this gun
+    local existingBillboard = GunESPFolder:FindFirstChild(gun:GetFullName() .. "_GunESP")
+    if existingBillboard then
+        return
+    end
+    
+    -- Gun ESP Billboard
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = gun:GetFullName() .. "_GunESP"
+    billboard.Size = UDim2.new(0, 100, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = GunESPFolder
+
+    local gunLabel = Instance.new("TextLabel")
+    gunLabel.Size = UDim2.new(1, 0, 1, 0)
+    gunLabel.BackgroundTransparency = 1
+    gunLabel.Text = "🔫 GUN"
+    gunLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+    gunLabel.TextStrokeTransparency = 0
+    gunLabel.TextScaled = true
+    gunLabel.Font = Enum.Font.SourceSansBold
+    gunLabel.Parent = billboard
+
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = ""
+    distanceLabel.TextColor3 = Color3.fromRGB(255, 165, 0) -- Orange
+    distanceLabel.TextStrokeTransparency = 0
+    distanceLabel.TextScaled = true
+    distanceLabel.Font = Enum.Font.SourceSans
+    distanceLabel.Parent = billboard
+
+    coroutine.wrap(function()
+        while gun and gun.Parent and billboard.Parent do
+            pcall(function()
+                local handle = gun:FindFirstChild("Handle") or gun:FindFirstChildWhichIsA("BasePart")
+                if handle then
+                    billboard.Adornee = handle
+                    
+                    -- Calculate distance
+                    local localChar = game.Players.LocalPlayer.Character
+                    if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                        local distance = (handle.Position - localChar:FindFirstChild("HumanoidRootPart").Position).Magnitude
+                        distanceLabel.Text = string.format("%.1f studs", distance)
+                    end
+                    
+                    billboard.Enabled = getgenv().GunESPEnabled
+                else
+                    billboard.Enabled = false
+                end
+            end)
+            task.wait(0.1)
+        end
+        if billboard then
+            billboard:Destroy()
+        end
+    end)()
+end
+
+-- Track existing guns in workspace and all subfolders
+for _, obj in ipairs(workspace:GetDescendants()) do
+    if obj:IsA("Tool") and (obj.Name == "Gun" or obj:FindFirstChild("Gun")) and obj:FindFirstChild("Handle") then
+        TrackGun(obj)
+    end
+end
+
+-- Watch for new guns being added anywhere
+workspace.DescendantAdded:Connect(function(obj)
+    if obj:IsA("Tool") and (obj.Name == "Gun" or obj:FindFirstChild("Gun")) and obj:FindFirstChild("Handle") then
+        TrackGun(obj)
+    end
+end)
+
+-- Clean up gun ESP when guns are removed
+workspace.DescendantRemoving:Connect(function(obj)
+    if obj:IsA("Tool") and obj.Name == "Gun" then
+        local oldBillboard = GunESPFolder:FindFirstChild(obj.Name .. "_GunESP")
+        if oldBillboard then
+            oldBillboard:Destroy()
+        end
+    end
+end)
+
 -- Aimbot Tab 🎯
 local AimbotTab = Window:CreateTab("🎯 Aimbot", 4483362458)
+
+-- Aimbot Keybind Info
+AimbotTab:CreateLabel("🎖 Aimbot (Keybind: Q)")
+
+-- Aimbot Keybind (Q key)
+getgenv().AimbotEnabled = false -- Initialize aimbot state
+getgenv().AimbotSmoothness = 5 -- Initialize smoothness
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
+        getgenv().AimbotEnabled = not getgenv().AimbotEnabled
+        
+        -- Show notification when toggled
+        Rayfield:Notify({
+            Title = "Aimbot",
+            Content = "Aimbot " .. (getgenv().AimbotEnabled and "Enabled" or "Disabled"),
+            Duration = 2
+        })
+    end
+end)
 
 -- Aimbot Toggle 🎖
 AimbotTab:CreateToggle({
@@ -243,11 +373,22 @@ local target = nil
 local function getClosestPlayer()
     local closestPlayer = nil
     local closestDistance = math.huge
+    local localChar = game.Players.LocalPlayer.Character
+    local localHrp = localChar and localChar:FindFirstChild("HumanoidRootPart")
+    
+    if not localHrp then return nil end
     
     for _, player in ipairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
             local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+                local humanoid = char:FindFirstChild("Humanoid")
+                
+                -- Skip dead players
+                if humanoid.Health <= 0 then
+                    continue
+                end
+                
                 -- Check if target is murderer (if setting is enabled)
                 if getgenv().TargetMurderersOnly then
                     local knife = char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
@@ -256,8 +397,11 @@ local function getClosestPlayer()
                     end
                 end
                 
-                local distance = (char:FindFirstChild("HumanoidRootPart").Position - camera.CFrame.Position).Magnitude
-                if distance < closestDistance then
+                local targetHrp = char:FindFirstChild("HumanoidRootPart")
+                local distance = (targetHrp.Position - localHrp.Position).Magnitude
+                
+                -- Only target players within reasonable range (500 studs)
+                if distance < 500 and distance < closestDistance then
                     closestDistance = distance
                     closestPlayer = player
                 end
@@ -273,17 +417,90 @@ game:GetService("RunService").RenderStepped:Connect(function()
         local closestPlayer = getClosestPlayer()
         if closestPlayer then
             local char = closestPlayer.Character
-            if char and char:FindFirstChild("Head") then
+            if char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
                 local targetPos = char:FindFirstChild("Head").Position
                 local currentCFrame = camera.CFrame
-                local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
                 
-                local smoothness = getgenv().AimbotSmoothness or 5
-                camera.CFrame = currentCFrame:Lerp(lookAt, 0.1 / smoothness)
+                -- Check if target is visible (not behind walls)
+                local localHrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if localHrp then
+                    local raycastResult = workspace:Raycast(localHrp.Position, targetPos - localHrp.Position, RaycastParams.new())
+                    if not raycastResult or raycastResult.Instance.Parent == char then
+                        local smoothness = getgenv().AimbotSmoothness or 5
+                        -- Fix smoothness: higher value = smoother (slower) aiming
+                        local lerpAmount = math.clamp(0.05 / smoothness, 0.01, 0.3)
+                        local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
+                        camera.CFrame = currentCFrame:Lerp(lookAt, lerpAmount)
+                    end
+                end
             end
         end
     end
 end)
+
+-- Teleport Tab 🌀
+local TeleportTab = Window:CreateTab("🌀 Teleport", 4483362458)
+
+-- Teleport to Player Section
+TeleportTab:CreateLabel("👥 Teleport to Player:")
+
+-- Create individual teleport buttons for common player slots
+local teleportButtons = {}
+
+local function createTeleportButton(playerName)
+    return TeleportTab:CreateButton({
+        Name = "📍 " .. playerName,
+        Callback = function()
+            local targetPlayer = game.Players:FindFirstChild(playerName)
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local localChar = game.Players.LocalPlayer.Character
+                if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                    localChar:FindFirstChild("HumanoidRootPart").CFrame = targetPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame
+                    
+                    Rayfield:Notify({
+                        Title = "Teleport",
+                        Content = "Teleported to " .. playerName,
+                        Duration = 3
+                    })
+                end
+            else
+                Rayfield:Notify({
+                    Title = "Teleport Failed",
+                    Content = playerName .. " not found or no character",
+                    Duration = 3
+                })
+            end
+        end,
+    })
+end
+
+-- Create buttons for players currently in game
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        table.insert(teleportButtons, createTeleportButton(player.Name))
+    end
+end
+
+-- Refresh button
+TeleportTab:CreateButton({
+    Name = "🔄 Refresh Players",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Refresh",
+            Content = "Check the player list below!",
+            Duration = 2
+        })
+    end,
+})
+
+-- Player list label (updates when refresh is clicked)
+TeleportTab:CreateLabel("Current players in server:")
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        TeleportTab:CreateLabel("• " .. player.Name)
+    end
+end
+
 
 -- Misc Tab 🛠️
 local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
@@ -428,37 +645,101 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Speed Boost
-MiscTab:CreateSlider({
+-- Speed Boost Toggle
+MiscTab:CreateToggle({
     Name = "[Speed Boost]",
-    Range = {16, 200},
-    Increment = 4,
-    CurrentValue = 16,
+    CurrentValue = false,
     Callback = function(value)
-        getgenv().WalkSpeed = value
-        pcall(function()
-            local char = game.Players.LocalPlayer.Character
-            if char and char:FindFirstChildOfClass("Humanoid") then
-                char:FindFirstChildOfClass("Humanoid").WalkSpeed = value
-            end
-        end)
+        getgenv().SpeedBoostEnabled = value
+        if value then
+            getgenv().SpeedBoostValue = 50 -- Default speed value
+            coroutine.wrap(function()
+                while getgenv().SpeedBoostEnabled do
+                    pcall(function()
+                        local char = game.Players.LocalPlayer.Character
+                        if char and char:FindFirstChildOfClass("Humanoid") then
+                            char:FindFirstChildOfClass("Humanoid").WalkSpeed = getgenv().SpeedBoostValue or 50
+                        end
+                    end)
+                    task.wait(0.1)
+                end
+            end)()
+        else
+            pcall(function()
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid").WalkSpeed = 16 -- Reset to default
+                end
+            end)
+        end
     end,
 })
 
--- Jump Power
+-- Speed Boost Value Slider
 MiscTab:CreateSlider({
-    Name = "[Jump Power]",
-    Range = {50, 200},
-    Increment = 10,
+    Name = "[Speed Value]",
+    Range = {16, 200},
+    Increment = 4,
     CurrentValue = 50,
     Callback = function(value)
-        getgenv().JumpPower = value
-        pcall(function()
-            local char = game.Players.LocalPlayer.Character
-            if char and char:FindFirstChildOfClass("Humanoid") then
-                char:FindFirstChildOfClass("Humanoid").JumpPower = value
-            end
-        end)
+        getgenv().SpeedBoostValue = value
+        if getgenv().SpeedBoostEnabled then
+            pcall(function()
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid").WalkSpeed = value
+                end
+            end)
+        end
+    end,
+})
+
+-- Jump Power Toggle
+MiscTab:CreateToggle({
+    Name = "[Jump Power]",
+    CurrentValue = false,
+    Callback = function(value)
+        getgenv().JumpPowerEnabled = value
+        if value then
+            getgenv().JumpPowerValue = 100 -- Default jump value
+            coroutine.wrap(function()
+                while getgenv().JumpPowerEnabled do
+                    pcall(function()
+                        local char = game.Players.LocalPlayer.Character
+                        if char and char:FindFirstChildOfClass("Humanoid") then
+                            char:FindFirstChildOfClass("Humanoid").JumpPower = getgenv().JumpPowerValue or 100
+                        end
+                    end)
+                    task.wait(0.1)
+                end
+            end)()
+        else
+            pcall(function()
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid").JumpPower = 50 -- Reset to default
+                end
+            end)
+        end
+    end,
+})
+
+-- Jump Power Value Slider
+MiscTab:CreateSlider({
+    Name = "[Jump Value]",
+    Range = {50, 200},
+    Increment = 10,
+    CurrentValue = 100,
+    Callback = function(value)
+        getgenv().JumpPowerValue = value
+        if getgenv().JumpPowerEnabled then
+            pcall(function()
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid").JumpPower = value
+                end
+            end)
+        end
     end,
 })
 
@@ -468,6 +749,46 @@ MiscTab:CreateToggle({
     CurrentValue = false,
     Callback = function(value)
         getgenv().InfiniteJump = value
+        if value then
+            getgenv().InfiniteJumpConnection = game:GetService("UserInputService").JumpRequest:Connect(function()
+                local char = game.Players.LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    -- Force jump regardless of state
+                    humanoid.Jump = true
+                    -- Also change state to jumping for better reliability
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+            
+            -- Also connect to heartbeat for continuous jumping while space is held
+            getgenv().InfiniteJumpHeartbeat = game:GetService("RunService").Heartbeat:Connect(function()
+                if game:GetService("UserInputService"):IsKeyDown(Enum.KeyCode.Space) then
+                    local char = game.Players.LocalPlayer.Character
+                    if char and char:FindFirstChildOfClass("Humanoid") then
+                        local humanoid = char:FindFirstChildOfClass("Humanoid")
+                        if humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+                            -- Allow jumping while in air
+                            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                            humanoid.Jump = true
+                        end
+                    end
+                end
+            end)
+        else
+            if getgenv().InfiniteJumpConnection then
+                getgenv().InfiniteJumpConnection:Disconnect()
+                getgenv().InfiniteJumpConnection = nil
+            end
+            if getgenv().InfiniteJumpHeartbeat then
+                getgenv().InfiniteJumpHeartbeat:Disconnect()
+                getgenv().InfiniteJumpHeartbeat = nil
+            end
+            if getgenv().StatisticsOverlayConnection then
+                getgenv().StatisticsOverlayConnection:Disconnect()
+                getgenv().StatisticsOverlayConnection = nil
+            end
+        end
     end,
 })
 
@@ -579,7 +900,6 @@ MiscTab:CreateToggle({
     end,
 })
 
-
 -- Anti Knockback
 MiscTab:CreateToggle({
     Name = "[Anti Knockback]",
@@ -598,6 +918,226 @@ MiscTab:CreateToggle({
                     task.wait(0.1)
                 end
             end)()
+        end
+    end,
+})
+
+-- Auto Grab Gun
+MiscTab:CreateToggle({
+    Name = "[Auto Grab Gun]",
+    CurrentValue = false,
+    Callback = function(value)
+        getgenv().AutoGrabGunEnabled = value
+        if value then
+            getgenv().SheriffDead = false
+            getgenv().IsGrabbingGun = false
+            
+            task.spawn(function()
+                while getgenv().AutoGrabGunEnabled do
+                    pcall(function()
+                        local localChar = game.Players.LocalPlayer.Character
+                        if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
+                            task.wait(1)
+                            return
+                        end
+                        
+                        if not getgenv().OriginalPosition and not getgenv().IsGrabbingGun then
+                            getgenv().OriginalPosition = localChar:FindFirstChild("HumanoidRootPart").Position
+                        end
+                        
+                        if getgenv().IsGrabbingGun then
+                            task.wait(0.1)
+                            return
+                        end
+                        
+                        local gunObject = nil
+                        local gunPosition = nil
+                        
+                        for _, obj in ipairs(workspace:GetDescendants()) do
+                            if obj:IsA("Tool") and (obj.Name == "Gun" or obj:FindFirstChild("Gun")) then
+                                local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildWhichIsA("BasePart")
+                                if handle then
+                                    gunObject = obj
+                                    gunPosition = handle.Position
+                                    break
+                                end
+                            end
+                        end
+                        
+                        local sheriffDead = false
+                        for _, player in ipairs(game.Players:GetPlayers()) do
+                            if player ~= game.Players.LocalPlayer then
+                                local char = player.Character
+                                if char and char:FindFirstChildOfClass("Humanoid") then
+                                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                                    local hadGun = player.Backpack:FindFirstChild("Gun") ~= nil or char:FindFirstChild("Gun") ~= nil
+                                    local isDead = humanoid.Health <= 0
+                                    
+                                    if hadGun and isDead then
+                                        sheriffDead = true
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                        
+                        if gunObject and gunPosition and (sheriffDead or getgenv().SheriffDead) then
+                            getgenv().SheriffDead = true
+                            getgenv().IsGrabbingGun = true
+                            
+                            local hrp = localChar:FindFirstChild("HumanoidRootPart")
+                            if hrp then
+                                hrp.CFrame = CFrame.new(gunPosition + Vector3.new(0, 2, 0))
+                                task.wait(0.1)
+                                
+                                local pickedUp = false
+                                for i = 1, 10 do
+                                    if gunObject and gunObject.Parent then
+                                        local handle = gunObject:FindFirstChild("Handle") or gunObject:FindFirstChildWhichIsA("BasePart")
+                                        if handle then
+                                            local distance = (hrp.Position - handle.Position).Magnitude
+                                            if distance > 5 then
+                                                hrp.CFrame = CFrame.new(handle.Position + Vector3.new(0, 2, 0))
+                                                task.wait(0.05)
+                                            end
+                                            
+                                            hrp.CFrame = CFrame.new(handle.Position)
+                                            task.wait(0.1)
+                                            
+                                            local backpackGun = game.Players.LocalPlayer.Backpack:FindFirstChild("Gun")
+                                            local equippedGun = localChar:FindFirstChild("Gun")
+                                            
+                                            if backpackGun or equippedGun then
+                                                pickedUp = true
+                                                if backpackGun then
+                                                    backpackGun.Parent = localChar
+                                                end
+                                                break
+                                            end
+                                        end
+                                    end
+                                    task.wait(0.1)
+                                end
+                                
+                                if getgenv().OriginalPosition then
+                                    hrp.CFrame = CFrame.new(getgenv().OriginalPosition)
+                                    task.wait(0.1)
+                                end
+                                
+                                if pickedUp then
+                                    Rayfield:Notify({
+                                        Title = "Auto Grab Gun",
+                                        Content = "Successfully grabbed gun!",
+                                        Duration = 3
+                                    })
+                                else
+                                    Rayfield:Notify({
+                                        Title = "Auto Grab Gun",
+                                        Content = "Failed to grab gun",
+                                        Duration = 3
+                                    })
+                                end
+                                
+                                getgenv().SheriffDead = false
+                                getgenv().OriginalPosition = nil
+                                getgenv().IsGrabbingGun = false
+                            else
+                                getgenv().IsGrabbingGun = false
+                            end
+                        end
+                        
+                        if not gunObject and not sheriffDead then
+                            getgenv().SheriffDead = false
+                            getgenv().IsGrabbingGun = false
+                        end
+                    end)
+                    task.wait(0.1)
+                end
+            end)
+        else
+            getgenv().SheriffDead = false
+            getgenv().OriginalPosition = nil
+            getgenv().IsGrabbingGun = false
+        end
+    end,
+})
+
+-- Statistics Overlay
+MiscTab:CreateToggle({
+    Name = "[Statistics Overlay]",
+    CurrentValue = false,
+    Callback = function(value)
+        getgenv().StatisticsOverlayEnabled = value
+        if value then
+            -- Create a simple visible overlay for testing
+            local ScreenGui = Instance.new("ScreenGui")
+            ScreenGui.Name = "StatisticsOverlay"
+            ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+            ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            
+            local OverlayFrame = Instance.new("Frame")
+            OverlayFrame.Name = "StatsFrame"
+            OverlayFrame.Size = UDim2.new(0, 100, 0, 50)
+            OverlayFrame.Position = UDim2.new(0.5, 100, 0, -40)
+            OverlayFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+            OverlayFrame.BackgroundTransparency = 1 -- Completely transparent
+            OverlayFrame.BorderSizePixel = 0 -- No border
+            OverlayFrame.Parent = ScreenGui
+
+            local FPSLabel = Instance.new("TextLabel")
+            FPSLabel.Name = "FPSLabel"
+            FPSLabel.Size = UDim2.new(1, 0, 1, 0)
+            FPSLabel.Position = UDim2.new(0, 0, 0, 0)
+            FPSLabel.BackgroundTransparency = 1
+            FPSLabel.TextColor3 = Color3.fromRGB(255, 192, 203) -- Pink for FPS
+            FPSLabel.Font = Enum.Font.SourceSansBold
+            FPSLabel.TextSize = 18
+            FPSLabel.TextXAlignment = Enum.TextXAlignment.Center
+            FPSLabel.TextYAlignment = Enum.TextYAlignment.Center
+            FPSLabel.Text = "FPS: Auto-detecting..."
+            FPSLabel.Parent = OverlayFrame
+            
+            getgenv().StatisticsOverlayConnection = game:GetService("RunService").Stepped:Connect(function()
+                if getgenv().StatisticsOverlayEnabled and ScreenGui and ScreenGui.Parent then
+                    -- Get actual FPS from Roblox
+                    local fps = 0
+                    pcall(function()
+                        fps = math.floor(1 / game:GetService("RunService").RenderStepped:Wait())
+                    end)
+                    
+                    -- Update FPS label only
+                    FPSLabel.Text = "FPS: " .. fps
+                else
+                    -- Clean up if overlay was destroyed
+                    if getgenv().StatisticsOverlayConnection then
+                        getgenv().StatisticsOverlayConnection:Disconnect()
+                        getgenv().StatisticsOverlayConnection = nil
+                    end
+                end
+            end)
+            
+            -- Show notification that overlay was created
+            Rayfield:Notify({
+                Title = "Statistics Overlay",
+                Content = "Overlay enabled - should be visible now!",
+                Duration = 3
+            })
+            
+            print("Statistics Overlay created with visible background")
+        else
+            -- Clean up overlay
+            if getgenv().StatisticsOverlayConnection then
+                getgenv().StatisticsOverlayConnection:Disconnect()
+                getgenv().StatisticsOverlayConnection = nil
+            end
+            
+            local playerGui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
+            if playerGui then
+                local overlay = playerGui:FindFirstChild("StatisticsOverlay")
+                if overlay then
+                    overlay:Destroy()
+                end
+            end
         end
     end,
 })
@@ -641,6 +1181,7 @@ CreditsDiscordTab:CreateButton({
         getgenv().RoleESPEnabled = false
         getgenv().NameESPEnabled = false
         getgenv().DistanceESPEnabled = false
+        getgenv().GunESPEnabled = false
         getgenv().AimbotEnabled = false
         getgenv().NoClipEnabled = false
         getgenv().FlyEnabled = false
@@ -649,6 +1190,32 @@ CreditsDiscordTab:CreateButton({
         getgenv().InvisibleEnabled = false
         getgenv().AntiKnockbackEnabled = false
         getgenv().AntiCheatBypass = false
+        getgenv().AutoGrabGunEnabled = false
+        getgenv().SpeedBoostEnabled = false
+        getgenv().JumpPowerEnabled = false
+        getgenv().InfiniteJump = false
+        getgenv().IsGrabbingGun = false
+        getgenv().StatisticsOverlayEnabled = false
+        
+        -- Reset speed and jump to defaults
+        pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                humanoid.WalkSpeed = 16
+                humanoid.JumpPower = 50
+            end
+        end)
+        
+        -- Disconnect infinite jump
+        if getgenv().InfiniteJumpConnection then
+            getgenv().InfiniteJumpConnection:Disconnect()
+            getgenv().InfiniteJumpConnection = nil
+        end
+        if getgenv().InfiniteJumpHeartbeat then
+            getgenv().InfiniteJumpHeartbeat:Disconnect()
+            getgenv().InfiniteJumpHeartbeat = nil
+        end
         
         -- Clean up ESP
         pcall(function()
@@ -657,6 +1224,17 @@ CreditsDiscordTab:CreateButton({
             end
             if workspace:FindFirstChild("MM2_NameESP") then
                 workspace:FindFirstChild("MM2_NameESP"):Destroy()
+            end
+            if workspace:FindFirstChild("MM2_GunESP") then
+                workspace:FindFirstChild("MM2_GunESP"):Destroy()
+            end
+        end)
+        
+        -- Clean up Statistics Overlay
+        pcall(function()
+            local overlay = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("StatisticsOverlay")
+            if overlay then
+                overlay:Destroy()
             end
         end)
         
@@ -684,3 +1262,4 @@ Rayfield:Notify({
 })
 
 print("Jassy's ❤ MM2 Script loaded - Rayfield status: " .. (Rayfield and "Working" or "Error"))
+ 
