@@ -250,14 +250,14 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
--- Jassy Tab
-local JassyTab = Window:CreateTab("Jassy", 4483362458)
+-- Misc Tab
+local MiscTab = Window:CreateTab("Misc", 4483362458)
 
 -- Movement Section
-JassyTab:CreateLabel("=== MOVEMENT ===")
+MiscTab:CreateLabel("=== MOVEMENT ===")
 
 -- No Clip
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "No Clip",
     CurrentValue = false,
     Callback = function(value)
@@ -283,7 +283,7 @@ JassyTab:CreateToggle({
 })
 
 -- Fly
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Fly",
     CurrentValue = false,
     Callback = function(value)
@@ -361,7 +361,7 @@ JassyTab:CreateToggle({
 })
 
 -- Speed Boost
-JassyTab:CreateSlider({
+MiscTab:CreateSlider({
     Name = "Speed Boost",
     Range = {16, 200},
     Increment = 4,
@@ -378,7 +378,7 @@ JassyTab:CreateSlider({
 })
 
 -- Jump Power
-JassyTab:CreateSlider({
+MiscTab:CreateSlider({
     Name = "Jump Power",
     Range = {50, 200},
     Increment = 10,
@@ -395,7 +395,7 @@ JassyTab:CreateSlider({
 })
 
 -- Infinite Jump
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Infinite Jump",
     CurrentValue = false,
     Callback = function(value)
@@ -404,10 +404,10 @@ JassyTab:CreateToggle({
 })
 
 -- Visual Section
-JassyTab:CreateLabel("=== VISUAL ===")
+MiscTab:CreateLabel("=== VISUAL ===")
 
 -- Full Bright
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Full Bright",
     CurrentValue = false,
     Callback = function(value)
@@ -432,7 +432,7 @@ JassyTab:CreateToggle({
 })
 
 -- No Fog
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "No Fog",
     CurrentValue = false,
     Callback = function(value)
@@ -449,7 +449,7 @@ JassyTab:CreateToggle({
 })
 
 -- Remove Grass
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Remove Grass",
     CurrentValue = false,
     Callback = function(value)
@@ -465,10 +465,10 @@ JassyTab:CreateToggle({
 })
 
 -- Utility Section
-JassyTab:CreateLabel("=== UTILITY ===")
+MiscTab:CreateLabel("=== UTILITY ===")
 
 -- Auto Respawn
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Auto Respawn",
     CurrentValue = false,
     Callback = function(value)
@@ -491,7 +491,7 @@ JassyTab:CreateToggle({
 })
 
 -- Anti AFK
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Anti AFK",
     CurrentValue = false,
     Callback = function(value)
@@ -512,10 +512,10 @@ JassyTab:CreateToggle({
 })
 
 -- Character Section
-JassyTab:CreateLabel("=== CHARACTER ===")
+MiscTab:CreateLabel("=== CHARACTER ===")
 
 -- Invisible
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Invisible",
     CurrentValue = false,
     Callback = function(value)
@@ -534,7 +534,7 @@ JassyTab:CreateToggle({
 })
 
 -- Anti Knockback
-JassyTab:CreateToggle({
+MiscTab:CreateToggle({
     Name = "Anti Knockback",
     CurrentValue = false,
     Callback = function(value)
@@ -556,9 +556,9 @@ JassyTab:CreateToggle({
 })
 
 -- Jassy Section
-JassyTab:CreateLabel("=== JASSY ===")
+MiscTab:CreateLabel("=== JASSY ===")
 
-JassyTab:CreateButton({
+MiscTab:CreateButton({
     Name = "Copy Discord invite to clipboard",
     Callback = function()
         setclipboard("https://discord.gg/RhjnE4tEQ8")
@@ -570,7 +570,7 @@ JassyTab:CreateButton({
     end,
 })
 
-JassyTab:CreateButton({
+MiscTab:CreateButton({
     Name = "GUI KEYBIND: K",
     Callback = function()
         Rayfield:Notify({
@@ -582,12 +582,12 @@ JassyTab:CreateButton({
 })
 
 -- Credits
-JassyTab:CreateLabel("Script made by: Jassy")
-JassyTab:CreateLabel("Version: 1.0")
-JassyTab:CreateLabel("Features: ESP, Aimbot, Farm, Vape Misc")
+MiscTab:CreateLabel("Script made by: Jassy")
+MiscTab:CreateLabel("Version: 1.0")
+MiscTab:CreateLabel("Features: ESP, Aimbot, Farm, Vape Misc")
 
 -- Status
-JassyTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
+MiscTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
 
 -- Notification on load
 Rayfield:Notify({
