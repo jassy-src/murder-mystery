@@ -1,6 +1,5 @@
 -- Made by Jassy ❤
--- Property of ScriptForge
--- GitHub: https://github.com/jassy-src/murder-mystery/blob/main/murder_mystery_script.lua
+-- Property of ScriptForge ❤
 
 -- Anti-Cheat Bypass
 local function bypassAntiCheat()
@@ -48,8 +47,8 @@ end
 bypassAntiCheat()
 
 local Window = Rayfield:CreateWindow({
-    Name = "MM2 Script",
-    LoadingTitle = "MM2 Script",
+    Name = "🔫 MM2 Script 🔫",
+    LoadingTitle = "⚡ MM2 Script ⚡",
     LoadingSubtitle = "❤ Made by Jassy ❤",
     ConfigurationSaving = {
         Enabled = false,
@@ -57,30 +56,30 @@ local Window = Rayfield:CreateWindow({
     BackgroundImage = "https://i.imgur.com/f6P9Vci.jpeg"
 })
 
--- ESP Tab
-local ESPTab = Window:CreateTab("ESP", 4483362458)
+-- ESP Tab 🎯
+local ESPTab = Window:CreateTab("🎯 ESP", 4483362458)
 
--- Role ESP Toggle
+-- Role ESP Toggle 🔴
 ESPTab:CreateToggle({
-    Name = "[Role ESP]",
+    Name = "🔴 Role ESP",
     CurrentValue = false,
     Callback = function(value)
         getgenv().RoleESPEnabled = value
     end,
 })
 
--- Name ESP Toggle
+-- Name ESP Toggle 📝
 ESPTab:CreateToggle({
-    Name = "[Name ESP]",
+    Name = "📝 Name ESP",
     CurrentValue = false,
     Callback = function(value)
         getgenv().NameESPEnabled = value
     end,
 })
 
--- Distance ESP Toggle
+-- Distance ESP Toggle 📏
 ESPTab:CreateToggle({
-    Name = "[Distance ESP]",
+    Name = "📏 Distance ESP",
     CurrentValue = false,
     Callback = function(value)
         getgenv().DistanceESPEnabled = value
@@ -206,21 +205,21 @@ game.Players.PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Aimbot Tab
-local AimbotTab = Window:CreateTab("Aimbot", 4483362458)
+-- Aimbot Tab 🎯
+local AimbotTab = Window:CreateTab("🎯 Aimbot", 4483362458)
 
--- Aimbot Toggle
+-- Aimbot Toggle 🎖
 AimbotTab:CreateToggle({
-    Name = "[Aimbot]",
+    Name = "🎖 Aimbot",
     CurrentValue = false,
     Callback = function(value)
         getgenv().AimbotEnabled = value
     end,
 })
 
--- Aimbot Settings
+-- Aimbot Settings ⚙️
 AimbotTab:CreateSlider({
-    Name = "Aimbot Smoothness",
+    Name = "⚙️ Aimbot Smoothness",
     Range = {1, 10},
     Increment = 1,
     CurrentValue = 5,
@@ -230,7 +229,7 @@ AimbotTab:CreateSlider({
 })
 
 AimbotTab:CreateToggle({
-    Name = "[Target Murderers Only]",
+    Name = "🎯 Target Murderers Only",
     CurrentValue = true,
     Callback = function(value)
         getgenv().TargetMurderersOnly = value
@@ -286,169 +285,11 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
--- Misc Tab
-local MiscTab = Window:CreateTab("Misc", 4483362458)
+-- Misc Tab 🛠️
+local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
 
--- Credits/Discord Tab
-local CreditsDiscordTab = Window:CreateTab("Credits/Discord", 4483362458)
-
--- Jassy Section ❤
-CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
-
-CreditsDiscordTab:CreateButton({
-    Name = "Copy Discord invite to clipboard",
-    Callback = function()
-        setclipboard("https://discord.gg/RhjnE4tEQ8")
-        Rayfield:Notify({
-            Title = "Discord",
-            Content = "Copied Discord invite to clipboard!",
-            Duration = 5
-        })
-    end,
-})
-
-CreditsDiscordTab:CreateButton({
-    Name = "[GUI KEYBIND: K]",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Keybind",
-            Content = "GUI Keybind is K",
-            Duration = 5
-        })
-    end,
-})
-
--- Credits
-CreditsDiscordTab:CreateLabel("❤ Script made by: Jassy")
-CreditsDiscordTab:CreateLabel("Version: 1.0")
-CreditsDiscordTab:CreateLabel("Property Of ScriptForge")
-
--- Uninject Button
-CreditsDiscordTab:CreateButton({
-    Name = "[Uninject Script]",
-    Callback = function()
-        -- Stop all features
-        getgenv().RoleESPEnabled = false
-        getgenv().NameESPEnabled = false
-        getgenv().DistanceESPEnabled = false
-        getgenv().AimbotEnabled = false
-        getgenv().NoClipEnabled = false
-        getgenv().FlyEnabled = false
-        getgenv().AutoRespawnEnabled = false
-        getgenv().AntiAFKEnabled = false
-        getgenv().AntiKnockbackEnabled = false
-        getgenv().AntiCheatBypass = false
-        getgenv().FreeEmotesEnabled = false
-        
-        -- Stop animation system
-        if animationAPI then
-            animationAPI.reanimate(false)
-        end
-        
-        -- Clean up ESP
-        pcall(function()
-            if workspace:FindFirstChild("MM2_RoleESP_Highlights") then
-                workspace:FindFirstChild("MM2_RoleESP_Highlights"):Destroy()
-            end
-            if workspace:FindFirstChild("MM2_NameESP") then
-                workspace:FindFirstChild("MM2_NameESP"):Destroy()
-            end
-        end)
-        
-        -- Destroy UI
-        if Rayfield then
-            Rayfield:Destroy()
-        end
-        
-        Rayfield:Notify({
-            Title = "Script Uninjected",
-            Content = "Script has been successfully uninjected!",
-            Duration = 5
-        })
-    end,
-})
-
--- Status
-CreditsDiscordTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
-
--- Jassy Section ❤
-CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
-
-CreditsDiscordTab:CreateButton({
-    Name = "Copy Discord invite to clipboard",
-    Callback = function()
-        setclipboard("https://discord.gg/RhjnE4tEQ8")
-        Rayfield:Notify({
-            Title = "Discord",
-            Content = "Copied Discord invite to clipboard!",
-            Duration = 5
-        })
-    end,
-})
-
-CreditsDiscordTab:CreateButton({
-    Name = "[GUI KEYBIND: K]",
-    Callback = function()
-        Rayfield:Notify({
-            Title = "Keybind",
-            Content = "GUI Keybind is K",
-            Duration = 5
-        })
-    end,
-})
-
--- Credits
-CreditsDiscordTab:CreateLabel("❤ Script made by: Jassy")
-CreditsDiscordTab:CreateLabel("Version: 1.0")
-CreditsDiscordTab:CreateLabel("Property Of ScriptForge")
-
--- Uninject Button
-CreditsDiscordTab:CreateButton({
-    Name = "[Uninject Script]",
-    Callback = function()
-        -- Stop all features
-        getgenv().RoleESPEnabled = false
-        getgenv().NameESPEnabled = false
-        getgenv().DistanceESPEnabled = false
-        getgenv().AimbotEnabled = false
-        getgenv().NoClipEnabled = false
-        getgenv().FlyEnabled = false
-        getgenv().AutoRespawnEnabled = false
-        getgenv().AntiAFKEnabled = false
-        getgenv().AntiKnockbackEnabled = false
-        getgenv().AntiCheatBypass = false
-        getgenv().FreeEmotesEnabled = false
-        
-        -- Stop animation system
-        if animationAPI then
-            animationAPI.reanimate(false)
-        end
-        
-        -- Clean up ESP
-        pcall(function()
-            if workspace:FindFirstChild("MM2_RoleESP_Highlights") then
-                workspace:FindFirstChild("MM2_RoleESP_Highlights"):Destroy()
-            end
-            if workspace:FindFirstChild("MM2_NameESP") then
-                workspace:FindFirstChild("MM2_NameESP"):Destroy()
-            end
-        end)
-        
-        -- Destroy UI
-        if Rayfield then
-            Rayfield:Destroy()
-        end
-        
-        Rayfield:Notify({
-            Title = "Script Uninjected",
-            Content = "Script has been successfully uninjected!",
-            Duration = 5
-        })
-    end,
-})
-
--- Status
-CreditsDiscordTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
+-- Credits/Discord Tab 💬
+local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
 
 -- Movement Section
 MiscTab:CreateLabel("=== MOVEMENT ===")
@@ -741,221 +582,22 @@ MiscTab:CreateToggle({
 -- Character Section
 MiscTab:CreateLabel("=== CHARACTER ===")
 
--- Animation System
-local animationAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animation_module.lua"))()
-
--- Free Emotes Toggle
+-- Invisible
 MiscTab:CreateToggle({
-    Name = "[Free Emotes]",
+    Name = "[Invisible]",
     CurrentValue = false,
     Callback = function(value)
-        getgenv().FreeEmotesEnabled = value
-        if value then
-            if animationAPI then
-                animationAPI.reanimate(true)
-            end
-        else
-            if animationAPI then
-                animationAPI.reanimate(false)
-            end
-        end
-    end,
-})
-
--- Emote Wheel Button
-MiscTab:CreateButton({
-    Name = "[Open Emote Wheel]",
-    Callback = function()
-        if not getgenv().FreeEmotesEnabled or not animationAPI then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Enable Free Emotes first!",
-                Duration = 3
-            })
-            return
-        end
-        
-        -- Create emote wheel GUI
-        local emoteGui = Instance.new("ScreenGui")
-        emoteGui.Name = "EmoteWheel"
-        emoteGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-        
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(0, 300, 0, 300)
-        frame.Position = UDim2.new(0.5, -150, 0.5, -150)
-        frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-        frame.BorderSizePixel = 2
-        frame.BorderColor3 = Color3.new(0, 1, 0)
-        frame.BackgroundTransparency = 0.2
-        frame.Parent = emoteGui
-        
-        -- Emote buttons
-        local emotes = {
-            {name = "Dance", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/dance.lua"},
-            {name = "Wave", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/wave.lua"},
-            {name = "Laugh", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/laugh.lua"},
-            {name = "Cheer", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/cheer.lua"},
-            {name = "Point", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/point.lua"},
-            {name = "Sit", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/sit.lua"},
-            {name = "Sleep", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/sleep.lua"},
-            {name = "Flip", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/flip.lua"}
-        }
-        
-        for i, emote in ipairs(emotes) do
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0, 80, 0, 30)
-            btn.Position = UDim2.new(0, (i-1)%3 * 100 + 10, 0, math.floor((i-1)/3) * 40 + 10)
-            btn.Text = emote.name
-            btn.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-            btn.TextColor3 = Color3.new(1, 1, 1)
-            btn.Parent = frame
-            
-            btn.MouseButton1Click:Connect(function()
-                if animationAPI and animationAPI.is_reanimated() then
-                    animationAPI.play_animation(emote.url, 1.0)
-                    Rayfield:Notify({
-                        Title = "Emote Played",
-                        Content = "Playing: " .. emote.name,
-                        Duration = 2
-                    })
+        getgenv().InvisibleEnabled = value
+        pcall(function()
+            local char = game.Players.LocalPlayer.Character
+            if char then
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.Transparency = value and 1 or 0
+                    end
                 end
-            end)
-        end
-        
-        -- Close button
-        local closeBtn = Instance.new("TextButton")
-        closeBtn.Size = UDim2.new(0, 60, 0, 25)
-        closeBtn.Position = UDim2.new(1, -70, 0, 5)
-        closeBtn.Text = "Close"
-        closeBtn.BackgroundColor3 = Color3.new(1, 0, 0)
-        closeBtn.TextColor3 = Color3.new(1, 1, 1)
-        closeBtn.Parent = frame
-        
-        closeBtn.MouseButton1Click:Connect(function()
-            emoteGui:Destroy()
+            end
         end)
-        
-        -- Auto close after 10 seconds
-        game:GetService("Debris"):AddItem(emoteGui, 10)
-    end,
-})
-
--- Anti Knockback
-MiscTab:CreateToggle({
-    Name = "[Anti Knockback]",
-    CurrentValue = false,
-    Callback = function(value)
-        getgenv().AntiKnockbackEnabled = value
-        if value then
-            coroutine.wrap(function()
-                while getgenv().AntiKnockbackEnabled do
-                    pcall(function()
-                        local char = game.Players.LocalPlayer.Character
-                        if char and char:FindFirstChild("HumanoidRootPart") then
-                            char:FindFirstChild("HumanoidRootPart").Velocity = Vector3.new(0, 0, 0)
-                        end
-                    end)
-                    task.wait(0.1)
-                end
-            end)()
-        end
-    end,
-})
-local animationAPI = loadstring(game:HttpGet("https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animation_module.lua"))()
-
--- Free Emotes Toggle
-MiscTab:CreateToggle({
-    Name = "[Free Emotes]",
-    CurrentValue = false,
-    Callback = function(value)
-        getgenv().FreeEmotesEnabled = value
-        if value then
-            if animationAPI then
-                animationAPI.reanimate(true)
-            end
-        else
-            if animationAPI then
-                animationAPI.reanimate(false)
-            end
-        end
-    end,
-})
-
--- Emote Wheel Button
-MiscTab:CreateButton({
-    Name = "[Open Emote Wheel]",
-    Callback = function()
-        if not getgenv().FreeEmotesEnabled or not animationAPI then
-            Rayfield:Notify({
-                Title = "Error",
-                Content = "Enable Free Emotes first!",
-                Duration = 3
-            })
-            return
-        end
-        
-        -- Create emote wheel GUI
-        local emoteGui = Instance.new("ScreenGui")
-        emoteGui.Name = "EmoteWheel"
-        emoteGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-        
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(0, 300, 0, 300)
-        frame.Position = UDim2.new(0.5, -150, 0.5, -150)
-        frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
-        frame.BorderSizePixel = 2
-        frame.BorderColor3 = Color3.new(0, 1, 0)
-        frame.BackgroundTransparency = 0.2
-        frame.Parent = emoteGui
-        
-        -- Emote buttons
-        local emotes = {
-            {name = "Dance", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/dance.lua"},
-            {name = "Wave", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/wave.lua"},
-            {name = "Laugh", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/laugh.lua"},
-            {name = "Cheer", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/cheer.lua"},
-            {name = "Point", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/point.lua"},
-            {name = "Sit", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/sit.lua"},
-            {name = "Sleep", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/sleep.lua"},
-            {name = "Flip", url = "https://raw.githubusercontent.com/jassy-src/murder-mystery/main/animations/flip.lua"}
-        }
-        
-        for i, emote in ipairs(emotes) do
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0, 80, 0, 30)
-            btn.Position = UDim2.new(0, (i-1)%3 * 100 + 10, 0, math.floor((i-1)/3) * 40 + 10)
-            btn.Text = emote.name
-            btn.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-            btn.TextColor3 = Color3.new(1, 1, 1)
-            btn.Parent = frame
-            
-            btn.MouseButton1Click:Connect(function()
-                if animationAPI and animationAPI.is_reanimated() then
-                    animationAPI.play_animation(emote.url, 1.0)
-                    Rayfield:Notify({
-                        Title = "Emote Played",
-                        Content = "Playing: " .. emote.name,
-                        Duration = 2
-                    })
-                end
-            end)
-        end
-        
-        -- Close button
-        local closeBtn = Instance.new("TextButton")
-        closeBtn.Size = UDim2.new(0, 60, 0, 25)
-        closeBtn.Position = UDim2.new(1, -70, 0, 5)
-        closeBtn.Text = "Close"
-        closeBtn.BackgroundColor3 = Color3.new(1, 0, 0)
-        closeBtn.TextColor3 = Color3.new(1, 1, 1)
-        closeBtn.Parent = frame
-        
-        closeBtn.MouseButton1Click:Connect(function()
-            emoteGui:Destroy()
-        end)
-        
-        -- Auto close after 10 seconds
-        game:GetService("Debris"):AddItem(emoteGui, 10)
     end,
 })
 
@@ -981,33 +623,11 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Anti Knockback
-MiscTab:CreateToggle({
-    Name = "[Anti Knockback]",
-    CurrentValue = false,
-    Callback = function(value)
-        getgenv().AntiKnockbackEnabled = value
-        if value then
-            coroutine.wrap(function()
-                while getgenv().AntiKnockbackEnabled do
-                    pcall(function()
-                        local char = game.Players.LocalPlayer.Character
-                        if char and char:FindFirstChild("HumanoidRootPart") then
-                            char:FindFirstChild("HumanoidRootPart").Velocity = Vector3.new(0, 0, 0)
-                        end
-                    end)
-                    task.wait(0.1)
-                end
-            end)()
-        end
-    end,
-})
-
--- Jassy Section ❤
+-- Jassy Section ✨
 CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
 
 CreditsDiscordTab:CreateButton({
-    Name = "Copy Discord invite to clipboard",
+    Name = "💬 Copy Discord invite to clipboard",
     Callback = function()
         setclipboard("https://discord.gg/RhjnE4tEQ8")
         Rayfield:Notify({
@@ -1019,7 +639,7 @@ CreditsDiscordTab:CreateButton({
 })
 
 CreditsDiscordTab:CreateButton({
-    Name = "[GUI KEYBIND: K]",
+    Name = "⌨️ GUI KEYBIND: K",
     Callback = function()
         Rayfield:Notify({
             Title = "Keybind",
@@ -1029,10 +649,10 @@ CreditsDiscordTab:CreateButton({
     end,
 })
 
--- Credits
-CreditsDiscordTab:CreateLabel("❤ Script made by: Jassy")
-CreditsDiscordTab:CreateLabel("Version: 1.0")
-CreditsDiscordTab:CreateLabel("Property Of ScriptForge")
+-- Credits 📜
+CreditsDiscordTab:CreateLabel("📜 Script made by: Jassy ❤")
+CreditsDiscordTab:CreateLabel("📈 Version: 1.0")
+CreditsDiscordTab:CreateLabel("🔥 Property Of ScriptForge")
 
 -- Uninject Button
 CreditsDiscordTab:CreateButton({
@@ -1047,14 +667,9 @@ CreditsDiscordTab:CreateButton({
         getgenv().FlyEnabled = false
         getgenv().AutoRespawnEnabled = false
         getgenv().AntiAFKEnabled = false
+        getgenv().InvisibleEnabled = false
         getgenv().AntiKnockbackEnabled = false
         getgenv().AntiCheatBypass = false
-        getgenv().FreeEmotesEnabled = false
-        
-        -- Stop animation system
-        if animationAPI then
-            animationAPI.reanimate(false)
-        end
         
         -- Clean up ESP
         pcall(function()
@@ -1084,9 +699,9 @@ CreditsDiscordTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
 
 -- Notification on load
 Rayfield:Notify({
-    Title = "❤ Jassy's MM2 Script",
+    Title = "Jassy's ❤ MM2 Script",
     Content = "Script loaded successfully!",
     Duration = 5
 })
 
-print("❤ Jassy's MM2 Script loaded - Rayfield status: " .. (Rayfield and "Working" or "Error"))
+print("Jassy's ❤ MM2 Script loaded - Rayfield status: " .. (Rayfield and "Working" or "Error"))
