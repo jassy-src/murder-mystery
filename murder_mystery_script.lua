@@ -1,5 +1,42 @@
--- Roblox Murder Mystery Script - Solara Compatible Version
-local Players,RunService,UserInputService,Workspace,Camera,LocalPlayer=game:GetService("Players"),game:GetService("RunService"),game:GetService("UserInputService"),game:GetService("Workspace"),Workspace.CurrentCamera,Players.LocalPlayer
+-- Roblox Murder Mystery Script - Debug Version
+print("=== Murder Mystery Script Starting ===")
+
+-- Test basic services
+local success, Players = pcall(function() return game:GetService("Players") end)
+if not success then
+    warn("Failed to get Players service")
+    return
+end
+
+local success, RunService = pcall(function() return game:GetService("RunService") end)
+if not success then
+    warn("Failed to get RunService service")
+    return
+end
+
+local success, UserInputService = pcall(function() return game:GetService("UserInputService") end)
+if not success then
+    warn("Failed to get UserInputService service")
+    return
+end
+
+local success, Workspace = pcall(function() return game:GetService("Workspace") end)
+if not success then
+    warn("Failed to get Workspace service")
+    return
+end
+
+local Camera = Workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+if not LocalPlayer then
+    warn("LocalPlayer not found")
+    return
+end
+
+print("Services loaded successfully")
+print("LocalPlayer:", LocalPlayer.Name)
+
 local Settings={ESP_Enabled=true,ESP_Color=Color3.new(1,0,0),ESP_Transparency=0.7,LockOn_Enabled=true,LockOn_Key=Enum.KeyCode.Q,LockOn_Smoothness=0.1,LockOn_FOV=30,Show_Distance=true,Show_Names=true,Show_Health=true,GUI_Key=Enum.KeyCode.RightShift,GUI_Visible=true}
 local LockedTarget,ESP_Objects,IsLoaded,IsLocked=nil,{},false,false
 local function GetDistance(Position)
@@ -127,18 +164,32 @@ RunService.Heartbeat:Connect(function()
 end)
 local function CreateGUI()
     if IsLoaded then return end
+    print("Creating GUI...")
+    
+    local success, PlayerGui = pcall(function() return LocalPlayer:WaitForChild("PlayerGui", 10) end)
+    if not success or not PlayerGui then
+        warn("Failed to get PlayerGui")
+        return
+    end
+    
     local ScreenGui=Instance.new("ScreenGui")
-    ScreenGui.Name,ScreenGui.Parent,ScreenGui.ResetOnSpawn="MurderMysteryGUI",LocalPlayer:WaitForChild("PlayerGui"),false
+    ScreenGui.Name,ScreenGui.Parent,ScreenGui.ResetOnSpawn="MurderMysteryGUI",PlayerGui,false
     ScreenGui.Enabled=Settings.GUI_Visible
+    print("ScreenGui created")
+    
     local MainFrame=Instance.new("Frame")
     MainFrame.Name,MainFrame.Size,MainFrame.Position,MainFrame.BackgroundColor3,MainFrame.BackgroundTransparency,MainFrame.BorderSizePixel="MainFrame",UDim2.new(0,200,0,320),UDim2.new(0,10,0,10),Color3.new(1,0.8,0.9),0.2,0
     MainFrame.Parent=ScreenGui
+    print("MainFrame created")
+    
     local Title=Instance.new("TextLabel")
     Title.Name,Title.Size,Title.Position,Title.BackgroundTransparency,Title.Text,Title.TextColor3,Title.TextScaled,Title.Font="Title",UDim2.new(1,0,0,30),UDim2.new(0,0,0,0),1,"Murder Mystery Script",Color3.new(1,1,1),true,Enum.Font.SourceSansBold
     Title.Parent=MainFrame
+    
     local Watermark=Instance.new("TextLabel")
     Watermark.Name,Watermark.Size,Watermark.Position,Watermark.BackgroundTransparency,Watermark.Text,Watermark.TextColor3,Watermark.TextScaled,Watermark.Font,Watermark.TextStrokeTransparency="Watermark",UDim2.new(1,0,0,20),UDim2.new(0,0,0,300),1,".nojasmine.",Color3.new(1,1,1),true,Enum.Font.SourceSansItalic,0.8
     Watermark.Parent=MainFrame
+    
     local ESPToggle=Instance.new("TextButton")
     ESPToggle.Name,ESPToggle.Size,ESPToggle.Position,ESPToggle.BackgroundColor3,ESPToggle.BorderSizePixel,ESPToggle.Text,ESPToggle.TextColor3,ESPToggle.Font="ESPToggle",UDim2.new(0,180,0,30),UDim2.new(0,10,0,40),Settings.ESP_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),0,"ESP: "..(Settings.ESP_Enabled and"ON"or"OFF"),Color3.new(1,1,1),Enum.Font.SourceSans
     ESPToggle.Parent=MainFrame
@@ -149,6 +200,7 @@ local function CreateGUI()
             for _,Player in pairs(Players:GetPlayers())do if Player~=LocalPlayer then CreateESP(Player)end end
         else for Player in pairs(ESP_Objects)do RemoveESP(Player)end end
     end)
+    
     local LockOnToggle=Instance.new("TextButton")
     LockOnToggle.Name,LockOnToggle.Size,LockOnToggle.Position,LockOnToggle.BackgroundColor3,LockOnToggle.BorderSizePixel,LockOnToggle.Text,LockOnToggle.TextColor3,LockOnToggle.Font="LockOnToggle",UDim2.new(0,180,0,30),UDim2.new(0,10,0,80),Settings.LockOn_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),0,"Lock-On: "..(Settings.LockOn_Enabled and"ON"or"OFF"),Color3.new(1,1,1),Enum.Font.SourceSans
     LockOnToggle.Parent=MainFrame
@@ -157,9 +209,11 @@ local function CreateGUI()
         LockOnToggle.BackgroundColor3,LockOnToggle.Text=Settings.LockOn_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),"Lock-On: "..(Settings.LockOn_Enabled and"ON"or"OFF")
         if not Settings.LockOn_Enabled then Unlock()end
     end)
+    
     local Instructions=Instance.new("TextLabel")
     Instructions.Name,Instructions.Size,Instructions.Position,Instructions.BackgroundTransparency,Instructions.Text,Instructions.TextColor3,Instructions.TextScaled,Instructions.Font,Instructions.TextWrapped="Instructions",UDim2.new(1,0,0,100),UDim2.new(0,0,0,120),1,"Press Q to lock onto nearest player\nPress Right Shift to toggle GUI\nESP shows player info\nToggle features with buttons",Color3.new(1,1,1),true,Enum.Font.SourceSans,true
     Instructions.Parent=MainFrame
+    
     local dragging,dragStart,startPos=false,nil,nil
     MainFrame.InputBegan:Connect(function(input)
         if input.UserInputType==Enum.UserInputType.MouseButton1 then
@@ -175,8 +229,10 @@ local function CreateGUI()
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end
     end)
+    
     _G.MurderMysteryGUI=ScreenGui
     IsLoaded=true
+    print("GUI created successfully!")
 end
 if LocalPlayer.Character then
     CreateGUI()
