@@ -653,6 +653,54 @@ CreditsDiscordTab:CreateLabel("Script made by: Jassy")
 CreditsDiscordTab:CreateLabel("Version: 1.0")
 CreditsDiscordTab:CreateLabel("Property Of ScriptForge")
 
+-- Uninject Button
+CreditsDiscordTab:CreateButton({
+    Name = "Uninject Script",
+    Callback = function()
+        -- Clean up all script elements
+        pcall(function()
+            -- Destroy ESP elements
+            if workspace:FindFirstChild("MM2_RoleESP_Highlights") then
+                workspace:FindFirstChild("MM2_RoleESP_Highlights"):Destroy()
+            end
+            if workspace:FindFirstChild("MM2_NameESP") then
+                workspace:FindFirstChild("MM2_NameESP"):Destroy()
+            end
+            
+            -- Stop all running loops
+            getgenv().RoleESPEnabled = false
+            getgenv().NameESPEnabled = false
+            getgenv().DistanceESPEnabled = false
+            getgenv().AimbotEnabled = false
+            getgenv().NoClipEnabled = false
+            getgenv().FlyEnabled = false
+            getgenv().AutoRespawnEnabled = false
+            getgenv().AntiAFKEnabled = false
+            getgenv().InvisibleEnabled = false
+            getgenv().AntiKnockbackEnabled = false
+            getgenv().AntiCheatBypass = false
+            
+            -- Destroy UI
+            if Rayfield then
+                Rayfield:Destroy()
+            end
+            
+            -- Clear global variables
+            for k, v in pairs(getgenv()) do
+                if type(v) == "boolean" or type(v) == "function" then
+                    getgenv()[k] = nil
+                end
+            end
+        end)
+        
+        Rayfield:Notify({
+            Title = "Script Uninjected",
+            Content = "Script has been successfully uninjected!",
+            Duration = 5
+        })
+    end,
+})
+
 -- Status
 CreditsDiscordTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
 
