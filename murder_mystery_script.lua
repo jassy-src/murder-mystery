@@ -1,6 +1,39 @@
 -- Made by Jassy
 -- Property of ScriptForge
 
+-- Anti-Cheat Bypass
+local function bypassAntiCheat()
+    -- Bypass "Invalid position" kick
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+        
+        -- Prevent position validation
+        hrp.Changed:Connect(function(property)
+            if property == "Position" then
+                hrp.Position = hrp.Position
+            end
+        end)
+        
+        -- Bypass teleport detection
+        local oldTeleport = hrp.Position
+        game:GetService("RunService").Heartbeat:Connect(function()
+            if (hrp.Position - oldTeleport).Magnitude > 50 then
+                oldTeleport = hrp.Position
+            end
+        end)
+    end
+    
+    -- Bypass speed detection
+    game:GetService("RunService").Stepped:Connect(function()
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            local humanoid = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid.MoveDirection.Magnitude > 0 then
+                humanoid.WalkSpeed = math.min(humanoid.WalkSpeed, 50)
+            end
+        end
+    end)
+end
+
 -- Test Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 print(Rayfield and "Rayfield loaded" or "Rayfield failed to load")
@@ -9,6 +42,9 @@ if not Rayfield then
     game.Players.LocalPlayer:Kick("Rayfield UI library is currently down. Please try again later.")
     return
 end
+
+-- Activate anti-cheat bypass
+bypassAntiCheat()
 
 local Window = Rayfield:CreateWindow({
     Name = "MM2 Script",
@@ -256,6 +292,36 @@ local CreditsDiscordTab = Window:CreateTab("Credits/Discord", 4483362458)
 
 -- Movement Section
 MiscTab:CreateLabel("=== MOVEMENT ===")
+
+-- Anti-Cheat Bypass Toggle
+MiscTab:CreateToggle({
+    Name = "Anti-Cheat Bypass",
+    CurrentValue = true,
+    Callback = function(value)
+        getgenv().AntiCheatBypass = value
+    end,
+})
+
+-- Position Lock (Bypass Invalid Position)
+MiscTab:CreateButton({
+    Name = "Lock Position (Bypass Kick)",
+    Callback = function()
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+            getgenv().LockedPosition = hrp.Position
+            
+            -- Create position lock loop
+            coroutine.wrap(function()
+                while getgenv().AntiCheatBypass and hrp and hrp.Parent do
+                    pcall(function()
+                        hrp.Position = getgenv().LockedPosition
+                    end)
+                    task.wait(0.1)
+                end
+            end)()
+        end
+    end,
+})
 
 -- No Clip
 MiscTab:CreateToggle({
