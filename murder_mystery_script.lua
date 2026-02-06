@@ -1,462 +1,189 @@
--- Roblox Murder Mystery Script - Rayfield UI Version
-print("[jassy's mm2] boot")
-
-local function _showInjectedPing()
-    pcall(function()
-        local Players = game:GetService("Players")
-        local lp = Players.LocalPlayer
-        if not lp then return end
-
-        local pg = lp:WaitForChild("PlayerGui")
-        local sg = pg:FindFirstChild("JassyMM2_Ping")
-        if not sg then
-            sg = Instance.new("ScreenGui")
-            sg.Name = "JassyMM2_Ping"
-            sg.ResetOnSpawn = false
-            sg.Parent = pg
-        end
-
-        if sg:FindFirstChild("Label") then
-            return
-        end
-
-        local lbl = Instance.new("TextLabel")
-        lbl.Name = "Label"
-        lbl.BackgroundTransparency = 0.35
-        lbl.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
-        lbl.BorderSizePixel = 0
-        lbl.Size = UDim2.new(0, 220, 0, 26)
-        lbl.Position = UDim2.new(0, 12, 0, 12)
-        lbl.Font = Enum.Font.GothamBold
-        lbl.TextSize = 14
-        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-        lbl.Text = "♡ jassy's mm2 injected ♡"
-        lbl.Parent = sg
-
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 10)
-        c.Parent = lbl
-    end)
-end
-
-_showInjectedPing()
-
-local function _showError(title, msg)
-    pcall(function()
-        local Players = game:GetService("Players")
-        local lp = Players.LocalPlayer
-        local parent = game:GetService("CoreGui")
-        if lp then
-            local pg = lp:FindFirstChild("PlayerGui")
-            if pg then
-                parent = pg
-            end
-        end
-
-        local sg = Instance.new("ScreenGui")
-        sg.Name = "JassyMM2_Error"
-        sg.ResetOnSpawn = false
-        sg.Parent = parent
-
-        local f = Instance.new("Frame")
-        f.Size = UDim2.new(0, 420, 0, 140)
-        f.Position = UDim2.new(0.5, -210, 0.2, 0)
-        f.BackgroundColor3 = Color3.fromRGB(30, 10, 20)
-        f.BorderSizePixel = 0
-        f.Parent = sg
-
-        local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 12)
-        c.Parent = f
-
-        local s = Instance.new("UIStroke")
-        s.Thickness = 1
-        s.Transparency = 0.4
-        s.Color = Color3.fromRGB(255, 105, 180)
-        s.Parent = f
-
-        local t = Instance.new("TextLabel")
-        t.BackgroundTransparency = 1
-        t.Size = UDim2.new(1, -20, 0, 28)
-        t.Position = UDim2.new(0, 10, 0, 8)
-        t.Font = Enum.Font.GothamBold
-        t.TextSize = 18
-        t.TextXAlignment = Enum.TextXAlignment.Left
-        t.TextColor3 = Color3.fromRGB(255, 255, 255)
-        t.Text = tostring(title or "Error")
-        t.Parent = f
-
-        local b = Instance.new("TextLabel")
-        b.BackgroundTransparency = 1
-        b.Size = UDim2.new(1, -20, 1, -46)
-        b.Position = UDim2.new(0, 10, 0, 40)
-        b.Font = Enum.Font.Gotham
-        b.TextSize = 14
-        b.TextXAlignment = Enum.TextXAlignment.Left
-        b.TextYAlignment = Enum.TextYAlignment.Top
-        b.TextWrapped = true
-        b.TextColor3 = Color3.fromRGB(255, 220, 235)
-        b.Text = tostring(msg or "")
-        b.Parent = f
-    end)
-end
-
-local Rayfield
-do
-    local ok, res = pcall(function()
-        local src
-        if typeof(game) == "Instance" and typeof(game.HttpGet) == "function" then
-            src = game:HttpGet("https://sirius.menu/rayfield")
-        elseif typeof(game) == "Instance" and typeof(game.HttpGetAsync) == "function" then
-            src = game:HttpGetAsync("https://sirius.menu/rayfield")
-        else
-            error("HttpGet/HttpGetAsync not available")
-        end
-
-        local fn = loadstring(src)
-        if typeof(fn) ~= "function" then
-            error("loadstring failed")
-        end
-        return fn()
-    end)
-
-    if not ok or not res then
-        warn("[jassy's mm2] Rayfield failed to load:", res)
-        _showError("jassy's mm2", "Rayfield failed to load.\n\n" .. tostring(res))
-        return
-    end
-    Rayfield = res
-end
-
--- Play opening sound effect
-local SoundService = game:GetService("SoundService")
-local OpeningSound = Instance.new("Sound")
-OpeningSound.SoundId = "rbxassetid://132529299748496" -- Your opening sound effect
-OpeningSound.Volume = 0.5
-OpeningSound.Parent = SoundService
-pcall(function()
-    OpeningSound:Play()
-end)
-
-local Window
-do
-    local ok, err = pcall(function()
-        Window = Rayfield:CreateWindow({
-           Name = "MM2 Script",
-           LoadingTitle = "nucax",
-           LoadingSubtitle = "https://github.com/nucax",
-           ConfigurationSaving = {
-              Enabled = false,
-           },
-           Background = "rbxassetid://75487938851287" -- Your custom background image
-        })
-    end)
-    if not ok or not Window then
-        _showError("jassy's mm2", "Rayfield window failed to create.\n\n" .. tostring(err))
-        return
-    end
-end
-
-local Tab = Window:CreateTab("Main", 4483362458)
-
-Tab:CreateLabel("MM2 Script")
-Tab:CreateLabel("This is the classic Rayfield UI loader.")
-
-Tab:CreateButton({
-    Name = "Close UI",
-    Callback = function()
-        pcall(function()
-            Rayfield:Destroy()
-        end)
-    end,
-})
-
-return
-
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
-local Camera = Workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
-
--- Variables
-local LockedTarget = nil
-local ESP_Objects = {}
-local IsLocked = false
-
--- ESP Folder
-local ESPFolder = Instance.new("Folder")
-ESPFolder.Name = "MM2_ESP_Highlights"
-ESPFolder.Parent = game.CoreGui
-
--- Utility Functions
+-- Roblox Murder Mystery Script - Remote Version
+-- This is the content that will be hosted on the remote URL
+local Players,RunService,UserInputService,Workspace,Camera,LocalPlayer=game:GetService("Players"),game:GetService("RunService"),game:GetService("UserInputService"),game:GetService("Workspace"),Workspace.CurrentCamera,Players.LocalPlayer
+local Settings={ESP_Enabled=true,ESP_Color=Color3.new(1,0,0),ESP_Transparency=0.7,LockOn_Enabled=true,LockOn_Key=Enum.KeyCode.Q,LockOn_Smoothness=0.1,LockOn_FOV=30,Show_Distance=true,Show_Names=true,Show_Health=true,GUI_Key=Enum.KeyCode.RightShift,GUI_Visible=true}
+local LockedTarget,ESP_Objects,IsLoaded,IsLocked=nil,{},false,false
 local function GetDistance(Position)
-    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return math.huge end
-    return (LocalPlayer.Character.HumanoidRootPart.Position - Position).Magnitude
+    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart")then return math.huge end
+    return (LocalPlayer.Character.HumanoidRootPart.Position-Position).Magnitude
 end
-
+local function IsPlayerVisible(Player)
+    if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart")then return false end
+    local Origin,CFrame=Camera.CFrame.Position,Player.Character.HumanoidRootPart.Position
+    local Ray=Ray.new(Origin,CFrame-Origin)
+    local Part,Position=Workspace:FindPartOnRayWithIgnoreList(Ray,{LocalPlayer.Character,Camera})
+    return Part and Part:IsDescendantOf(Player.Character)
+end
 local function GetClosestPlayer()
-    local ClosestPlayer = nil
-    local ClosestDistance = getgenv().LockOnFOV
-    
-    for _, Player in pairs(Players:GetPlayers()) do
-        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("Humanoid") and Player.Character:FindFirstChild("HumanoidRootPart") and Player.Character.Humanoid.Health > 0 then
-            local ScreenPosition, OnScreen = Camera:WorldToViewportPoint(Player.Character.HumanoidRootPart.Position)
+    local ClosestPlayer,ClosestDistance=nil,Settings.LockOn_FOV
+    for _,Player in pairs(Players:GetPlayers())do
+        if Player~=LocalPlayer and Player.Character and Player.Character:FindFirstChild("Humanoid")and Player.Character:FindFirstChild("HumanoidRootPart")and Player.Character.Humanoid.Health>0 then
+            local ScreenPosition,OnScreen=Camera:WorldToViewportPoint(Player.Character.HumanoidRootPart.Position)
             if OnScreen then
-                local Distance = (Vector2.new(ScreenPosition.X, ScreenPosition.Y) - Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)).Magnitude
-                if Distance < ClosestDistance then
-                    ClosestDistance = Distance
-                    ClosestPlayer = Player
-                end
+                local Distance=(Vector2.new(ScreenPosition.X,ScreenPosition.Y)-Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2)).Magnitude
+                if Distance<ClosestDistance then ClosestDistance,ClosestPlayer=Distance,Player end
             end
         end
     end
-    
     return ClosestPlayer
 end
-
--- ESP Functions
 local function CreateESP(Player)
-    if ESP_Objects[Player] then return end
-    
-    local Character = Player.Character
+    if ESP_Objects[Player]then return end
+    local Character=Player.Character
     if not Character then return end
-    
-    local ESP = {}
-    
-    -- Highlight
-    local Highlight = Instance.new("Highlight")
-    Highlight.Name = Player.Name .. "_ESP"
-    Highlight.FillTransparency = 0.5
-    Highlight.OutlineTransparency = 0
-    Highlight.FillColor = getgenv().ESPColor
-    Highlight.Parent = ESPFolder
-    
-    -- Billboard for info
-    local Billboard = Instance.new("BillboardGui")
-    Billboard.Name = "ESP_Billboard"
-    Billboard.Size = UDim2.new(0, 200, 0, 100)
-    Billboard.StudsOffset = Vector3.new(0, 3, 0)
-    Billboard.AlwaysOnTop = true
-    Billboard.Parent = Character:FindFirstChild("Head") or Character:FindFirstChild("HumanoidRootPart")
-    
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, 0, 1, 0)
-    Frame.BackgroundTransparency = 1
-    Frame.Parent = Billboard
-    
-    local NameLabel = Instance.new("TextLabel")
-    NameLabel.Name = "NameLabel"
-    NameLabel.Size = UDim2.new(1, 0, 0, 20)
-    NameLabel.Position = UDim2.new(0, 0, 0, 0)
-    NameLabel.BackgroundTransparency = 1
-    NameLabel.Text = Player.Name
-    NameLabel.TextColor3 = getgenv().ESPColor
-    NameLabel.TextStrokeTransparency = 0.5
-    NameLabel.TextScaled = true
-    NameLabel.Font = Enum.Font.SourceSansBold
-    NameLabel.Parent = Frame
-    
-    local DistanceLabel = Instance.new("TextLabel")
-    DistanceLabel.Name = "DistanceLabel"
-    DistanceLabel.Size = UDim2.new(1, 0, 0, 15)
-    DistanceLabel.Position = UDim2.new(0, 0, 0, 20)
-    DistanceLabel.BackgroundTransparency = 1
-    DistanceLabel.Text = ""
-    DistanceLabel.TextColor3 = getgenv().ESPColor
-    DistanceLabel.TextStrokeTransparency = 0.5
-    DistanceLabel.TextScaled = true
-    DistanceLabel.Font = Enum.Font.SourceSans
-    DistanceLabel.Parent = Frame
-    
-    local HealthLabel = Instance.new("TextLabel")
-    HealthLabel.Name = "HealthLabel"
-    HealthLabel.Size = UDim2.new(1, 0, 0, 15)
-    HealthLabel.Position = UDim2.new(0, 0, 0, 35)
-    HealthLabel.BackgroundTransparency = 1
-    HealthLabel.Text = ""
-    HealthLabel.TextColor3 = getgenv().ESPColor
-    HealthLabel.TextStrokeTransparency = 0.5
-    HealthLabel.TextScaled = true
-    HealthLabel.Font = Enum.Font.SourceSans
-    HealthLabel.Parent = Frame
-    
-    ESP.Highlight = Highlight
-    ESP.Billboard = Billboard
-    ESP.NameLabel = NameLabel
-    ESP.DistanceLabel = DistanceLabel
-    ESP.HealthLabel = HealthLabel
-    
-    ESP_Objects[Player] = ESP
+    local ESP={}
+    local Billboard=Instance.new("BillboardGui")
+    Billboard.Name,Billboard.Size,Billboard.StudsOffset,Billboard.AlwaysOnTop="ESP_Billboard",UDim2.new(0,200,0,100),Vector3.new(0,3,0),true
+    Billboard.Parent=Character:FindFirstChild("Head")or Character:FindFirstChild("HumanoidRootPart")
+    local Frame=Instance.new("Frame")
+    Frame.Size,Frame.BackgroundTransparency=UDim2.new(1,0,1,0),1
+    Frame.Parent=Billboard
+    local NameLabel=Instance.new("TextLabel")
+    NameLabel.Name,NameLabel.Size,NameLabel.Position,NameLabel.BackgroundTransparency="NameLabel",UDim2.new(1,0,0,20),UDim2.new(0,0,0,0),1
+    NameLabel.Text,NameLabel.TextColor3,NameLabel.TextStrokeTransparency,NameLabel.TextScaled,NameLabel.Font=Player.Name,Settings.ESP_Color,0.5,true,Enum.Font.SourceSansBold
+    NameLabel.Parent=Frame
+    local DistanceLabel=Instance.new("TextLabel")
+    DistanceLabel.Name,DistanceLabel.Size,DistanceLabel.Position,DistanceLabel.BackgroundTransparency="DistanceLabel",UDim2.new(1,0,0,15),UDim2.new(0,0,0,20),1
+    DistanceLabel.Text,DistanceLabel.TextColor3,DistanceLabel.TextStrokeTransparency,DistanceLabel.TextScaled,DistanceLabel.Font="",Settings.ESP_Color,0.5,true,Enum.Font.SourceSans
+    DistanceLabel.Parent=Frame
+    local HealthLabel=Instance.new("TextLabel")
+    HealthLabel.Name,HealthLabel.Size,HealthLabel.Position,HealthLabel.BackgroundTransparency="HealthLabel",UDim2.new(1,0,0,15),UDim2.new(0,0,0,35),1
+    HealthLabel.Text,HealthLabel.TextColor3,HealthLabel.TextStrokeTransparency,HealthLabel.TextScaled,HealthLabel.Font="",Settings.ESP_Color,0.5,true,Enum.Font.SourceSans
+    HealthLabel.Parent=Frame
+    local Box=Instance.new("BoxHandleAdornment")
+    Box.Name,Box.Size,Box.CFrame,Box.Color3,Box.Transparency,Box.AlwaysOnTop,Box.Visible,Box.ZIndex="ESP_Box",Character:GetExtentsSize(),Character.PrimaryPart.CFrame,Settings.ESP_Color,Settings.ESP_Transparency,true,false,10
+    Box.Parent=Workspace
+    ESP.Billboard,ESP.Box,ESP.NameLabel,ESP.DistanceLabel,ESP.HealthLabel=Billboard,Box,NameLabel,DistanceLabel,HealthLabel
+    ESP_Objects[Player]=ESP
 end
-
 local function UpdateESP(Player)
-    local ESP = ESP_Objects[Player]
+    local ESP=ESP_Objects[Player]
     if not ESP then return end
-    
-    local Character = Player.Character
-    if not Character or not Character:FindFirstChild("HumanoidRootPart") then
-        RemoveESP(Player)
-        return
-    end
-    
-    -- Update highlight
-    if ESP.Highlight then
-        ESP.Highlight.Adornee = Character
-        ESP.Highlight.FillColor = getgenv().ESPColor
-        ESP.Highlight.Enabled = getgenv().ESPEnabled
-    end
-    
-    -- Update name
-    if ESP.NameLabel then
-        ESP.NameLabel.Text = Player.Name
-        ESP.NameLabel.TextColor3 = getgenv().ESPColor
-        ESP.NameLabel.Visible = getgenv().ESPEnabled
-    end
-    
-    -- Update distance
-    if ESP.DistanceLabel then
-        local Distance = GetDistance(Character.HumanoidRootPart.Position)
-        ESP.DistanceLabel.Text = string.format("Distance: %.0f", Distance)
-        ESP.DistanceLabel.TextColor3 = getgenv().ESPColor
-        ESP.DistanceLabel.Visible = getgenv().ESPEnabled
-    end
-    
-    -- Update health
-    if ESP.HealthLabel and Character:FindFirstChild("Humanoid") then
-        local Health = Character.Humanoid.Health
-        local MaxHealth = Character.Humanoid.MaxHealth
-        ESP.HealthLabel.Text = string.format("Health: %.0f/%.0f", Health, MaxHealth)
-        ESP.HealthLabel.TextColor3 = getgenv().ESPColor
-        ESP.HealthLabel.Visible = getgenv().ESPEnabled
-    end
-    
-    -- Update billboard
-    if ESP.Billboard then
-        ESP.Billboard.Enabled = getgenv().ESPEnabled
-    end
+    local Character=Player.Character
+    if not Character or not Character:FindFirstChild("HumanoidRootPart")then RemoveESP(Player)return end
+    if Settings.Show_Names then ESP.NameLabel.Text,ESP.NameLabel.Visible=Player.Name,true else ESP.NameLabel.Visible=false end
+    if Settings.Show_Distance then
+        local Distance=GetDistance(Character.HumanoidRootPart.Position)
+        ESP.DistanceLabel.Text,ESP.DistanceLabel.Visible=string.format("Distance: %.0f",Distance),true
+    else ESP.DistanceLabel.Visible=false end
+    if Settings.Show_Health and Character:FindFirstChild("Humanoid")then
+        local Health,MaxHealth=Character.Humanoid.Health,Character.Humanoid.MaxHealth
+        ESP.HealthLabel.Text,ESP.HealthLabel.Visible=string.format("Health: %.0f/%.0f",Health,MaxHealth),true
+    else ESP.HealthLabel.Visible=false end
+    if Character.PrimaryPart then ESP.Box.Size,ESP.Box.CFrame,ESP.Box.Visible=Character:GetExtentsSize(),Character.PrimaryPart.CFrame,Settings.ESP_Enabled end
+    ESP.Billboard.Enabled=Settings.ESP_Enabled
 end
-
 local function RemoveESP(Player)
-    local ESP = ESP_Objects[Player]
+    local ESP=ESP_Objects[Player]
     if ESP then
-        if ESP.Highlight then ESP.Highlight:Destroy() end
-        if ESP.Billboard then ESP.Billboard:Destroy() end
-        ESP_Objects[Player] = nil
+        if ESP.Billboard then ESP.Billboard:Destroy()end
+        if ESP.Box then ESP.Box:Destroy()end
+        ESP_Objects[Player]=nil
     end
 end
-
--- Lock-On Functions
 local function LockOn(Player)
-    if not Player or not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then return end
-    LockedTarget = Player
-    IsLocked = true
+    if not Player or not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart")then return end
+    LockedTarget,IsLocked=Player,true
 end
-
-local function Unlock()
-    LockedTarget = nil
-    IsLocked = false
-end
-
+local function Unlock()LockedTarget,IsLocked=nil,false end
 local function UpdateLockOn()
-    if not getgenv().LockOnEnabled then
-        Unlock()
-        return
-    end
-    
-    if LockedTarget and LockedTarget.Character and LockedTarget.Character:FindFirstChild("HumanoidRootPart") then
-        if LockedTarget.Character:FindFirstChild("Humanoid").Health <= 0 then
-            Unlock()
-            return
-        end
-        
-        local TargetPosition = LockedTarget.Character.HumanoidRootPart.Position
-        local CurrentCFrame = Camera.CFrame
-        local LookAt = CFrame.new(CurrentCFrame.Position, TargetPosition)
-        Camera.CFrame = CurrentCFrame:Lerp(LookAt, getgenv().LockOnSmoothness)
-    else
-        Unlock()
-    end
+    if not Settings.LockOn_Enabled then Unlock()return end
+    if LockedTarget and LockedTarget.Character and LockedTarget.Character:FindFirstChild("HumanoidRootPart")then
+        if LockedTarget.Character:FindFirstChild("Humanoid").Health<=0 then Unlock()return end
+        local TargetPosition=LockedTarget.Character.HumanoidRootPart.Position
+        local CurrentCFrame=Camera.CFrame
+        local LookAt=CFrame.new(CurrentCFrame.Position,TargetPosition)
+        Camera.CFrame=CurrentCFrame:Lerp(LookAt,Settings.LockOn_Smoothness)
+    else Unlock()end
 end
-
--- Input Handling
-UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+UserInputService.InputBegan:Connect(function(Input,GameProcessed)
     if GameProcessed then return end
-    
-    if Input.KeyCode == Enum.KeyCode.Q and getgenv().LockOnEnabled then
-        if IsLocked then
-            Unlock()
-        else
-            local Target = GetClosestPlayer()
-            if Target then
-                LockOn(Target)
-            end
+    if Input.KeyCode==Settings.LockOn_Key and Settings.LockOn_Enabled then
+        if IsLocked then Unlock()else
+            local Target=GetClosestPlayer()
+            if Target then LockOn(Target)end
         end
     end
-    
-    -- K key to toggle GUI
-    if Input.KeyCode == Enum.KeyCode.K then
-        if Window then
-            Window:Toggle()
+    if Input.KeyCode==Settings.GUI_Key then
+        Settings.GUI_Visible=not Settings.GUI_Visible
+        if _G.MurderMysteryGUI then
+            _G.MurderMysteryGUI.Enabled=Settings.GUI_Visible
         end
     end
 end)
-
--- Player Management
 Players.PlayerAdded:Connect(function(Player)
-    if Player ~= LocalPlayer then
-        Player.CharacterAdded:Connect(function(Character)
-            if getgenv().ESPEnabled then
-                CreateESP(Player)
-            end
-        end)
-        
-        if getgenv().ESPEnabled then
-            CreateESP(Player)
-        end
-    end
+    Player.CharacterAdded:Connect(function(Character)if Settings.ESP_Enabled then CreateESP(Player)end end)
+    if Settings.ESP_Enabled then CreateESP(Player)end
 end)
-
-Players.PlayerRemoving:Connect(function(Player)
-    RemoveESP(Player)
-    if LockedTarget == Player then
-        Unlock()
-    end
-end)
-
--- Initialize ESP for existing players
-for _, Player in pairs(Players:GetPlayers()) do
-    if Player ~= LocalPlayer then
-        Player.CharacterAdded:Connect(function(Character)
-            if getgenv().ESPEnabled then
-                CreateESP(Player)
-            end
-        end)
-        
-        if getgenv().ESPEnabled then
-            CreateESP(Player)
-        end
+Players.PlayerRemoving:Connect(function(Player)RemoveESP(Player)if LockedTarget==Player then Unlock()end end)
+for _,Player in pairs(Players:GetPlayers())do
+    if Player~=LocalPlayer then
+        Player.CharacterAdded:Connect(function(Character)if Settings.ESP_Enabled then CreateESP(Player)end end)
+        if Settings.ESP_Enabled then CreateESP(Player)end
     end
 end
-
--- Main Update Loop
 RunService.Heartbeat:Connect(function()
-    -- Update ESP for all players
-    for Player, ESP in pairs(ESP_Objects) do
-        UpdateESP(Player)
-    end
-    
-    -- Update lock-on
+    for Player,ESP in pairs(ESP_Objects)do UpdateESP(Player)end
     UpdateLockOn()
 end)
-
--- Cleanup on character remove
-LocalPlayer.CharacterAdded:Connect(function(Character)
-    -- Reinitialize if needed
-end)
-
-print("Murder Mystery Script Loaded with Rayfield UI!")
-print("Press Q to lock onto nearest player")
-print("Use the Rayfield UI to toggle features")
+local function CreateGUI()
+    if IsLoaded then return end
+    local ScreenGui=Instance.new("ScreenGui")
+    ScreenGui.Name,ScreenGui.Parent,ScreenGui.ResetOnSpawn="MurderMysteryGUI",LocalPlayer:WaitForChild("PlayerGui"),false
+    ScreenGui.Enabled=Settings.GUI_Visible
+    local MainFrame=Instance.new("Frame")
+    MainFrame.Name,MainFrame.Size,MainFrame.Position,MainFrame.BackgroundColor3,MainFrame.BackgroundTransparency,MainFrame.BorderSizePixel="MainFrame",UDim2.new(0,200,0,320),UDim2.new(0,10,0,10),Color3.new(1,0.8,0.9),0.2,0
+    MainFrame.Parent=ScreenGui
+    local Title=Instance.new("TextLabel")
+    Title.Name,Title.Size,Title.Position,Title.BackgroundTransparency,Title.Text,Title.TextColor3,Title.TextScaled,Title.Font="Title",UDim2.new(1,0,0,30),UDim2.new(0,0,0,0),1,"Murder Mystery Script",Color3.new(1,1,1),true,Enum.Font.SourceSansBold
+    Title.Parent=MainFrame
+    local Watermark=Instance.new("TextLabel")
+    Watermark.Name,Watermark.Size,Watermark.Position,Watermark.BackgroundTransparency,Watermark.Text,Watermark.TextColor3,Watermark.TextScaled,Watermark.Font,Watermark.TextStrokeTransparency="Watermark",UDim2.new(1,0,0,20),UDim2.new(0,0,0,300),1,".nojasmine.",Color3.new(1,1,1),true,Enum.Font.SourceSansItalic,0.8
+    Watermark.Parent=MainFrame
+    local ESPToggle=Instance.new("TextButton")
+    ESPToggle.Name,ESPToggle.Size,ESPToggle.Position,ESPToggle.BackgroundColor3,ESPToggle.BorderSizePixel,ESPToggle.Text,ESPToggle.TextColor3,ESPToggle.Font="ESPToggle",UDim2.new(0,180,0,30),UDim2.new(0,10,0,40),Settings.ESP_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),0,"ESP: "..(Settings.ESP_Enabled and"ON"or"OFF"),Color3.new(1,1,1),Enum.Font.SourceSans
+    ESPToggle.Parent=MainFrame
+    ESPToggle.MouseButton1Click:Connect(function()
+        Settings.ESP_Enabled=not Settings.ESP_Enabled
+        ESPToggle.BackgroundColor3,ESPToggle.Text=Settings.ESP_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),"ESP: "..(Settings.ESP_Enabled and"ON"or"OFF")
+        if Settings.ESP_Enabled then
+            for _,Player in pairs(Players:GetPlayers())do if Player~=LocalPlayer then CreateESP(Player)end end
+        else for Player in pairs(ESP_Objects)do RemoveESP(Player)end end
+    end)
+    local LockOnToggle=Instance.new("TextButton")
+    LockOnToggle.Name,LockOnToggle.Size,LockOnToggle.Position,LockOnToggle.BackgroundColor3,LockOnToggle.BorderSizePixel,LockOnToggle.Text,LockOnToggle.TextColor3,LockOnToggle.Font="LockOnToggle",UDim2.new(0,180,0,30),UDim2.new(0,10,0,80),Settings.LockOn_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),0,"Lock-On: "..(Settings.LockOn_Enabled and"ON"or"OFF"),Color3.new(1,1,1),Enum.Font.SourceSans
+    LockOnToggle.Parent=MainFrame
+    LockOnToggle.MouseButton1Click:Connect(function()
+        Settings.LockOn_Enabled=not Settings.LockOn_Enabled
+        LockOnToggle.BackgroundColor3,LockOnToggle.Text=Settings.LockOn_Enabled and Color3.new(1,0.5,0.8)or Color3.new(1,0.8,0.9),"Lock-On: "..(Settings.LockOn_Enabled and"ON"or"OFF")
+        if not Settings.LockOn_Enabled then Unlock()end
+    end)
+    local Instructions=Instance.new("TextLabel")
+    Instructions.Name,Instructions.Size,Instructions.Position,Instructions.BackgroundTransparency,Instructions.Text,Instructions.TextColor3,Instructions.TextScaled,Instructions.Font,Instructions.TextWrapped="Instructions",UDim2.new(1,0,0,100),UDim2.new(0,0,0,120),1,"Press Q to lock onto nearest player\nPress Right Shift to toggle GUI\nESP shows player info\nToggle features with buttons",Color3.new(1,1,1),true,Enum.Font.SourceSans,true
+    Instructions.Parent=MainFrame
+    local dragging,dragStart,startPos=false,nil,nil
+    MainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType==Enum.UserInputType.MouseButton1 then
+            dragging,dragStart,startPos=true,input.Position,MainFrame.Position
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
+            local delta=input.Position-dragStart
+            MainFrame.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+delta.X,startPos.Y.Scale,startPos.Y.Offset+delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end
+    end)
+    _G.MurderMysteryGUI=ScreenGui
+    IsLoaded=true
+end
+if LocalPlayer.Character then
+    CreateGUI()
+else
+    LocalPlayer.CharacterAdded:Connect(function()
+        CreateGUI()
+    end)
+end
+print("Murder Mystery Script Loaded! Press Q to lock onto nearest player, Right Shift to toggle GUI")
