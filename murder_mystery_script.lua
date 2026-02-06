@@ -304,14 +304,14 @@ FarmTab:CreateToggle({
     end,
 })
 
--- Misc Tab
-local MiscTab = Window:CreateTab("Misc", 4483362458)
+-- Jassy Tab
+local JassyTab = Window:CreateTab("Jassy", 4483362458)
 
 -- Movement Section
-MiscTab:CreateLabel("=== MOVEMENT ===")
+JassyTab:CreateLabel("=== MOVEMENT ===")
 
 -- No Clip
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "No Clip",
     CurrentValue = false,
     Callback = function(value)
@@ -337,7 +337,7 @@ MiscTab:CreateToggle({
 })
 
 -- Fly
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Fly",
     CurrentValue = false,
     Callback = function(value)
@@ -415,7 +415,7 @@ MiscTab:CreateToggle({
 })
 
 -- Speed Boost
-MiscTab:CreateSlider({
+JassyTab:CreateSlider({
     Name = "Speed Boost",
     Range = {16, 200},
     Increment = 4,
@@ -432,7 +432,7 @@ MiscTab:CreateSlider({
 })
 
 -- Jump Power
-MiscTab:CreateSlider({
+JassyTab:CreateSlider({
     Name = "Jump Power",
     Range = {50, 200},
     Increment = 10,
@@ -449,7 +449,7 @@ MiscTab:CreateSlider({
 })
 
 -- Infinite Jump
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Infinite Jump",
     CurrentValue = false,
     Callback = function(value)
@@ -457,17 +457,11 @@ MiscTab:CreateToggle({
     end,
 })
 
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if getgenv().InfiniteJump then
-        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-    end
-end)
-
 -- Visual Section
-MiscTab:CreateLabel("=== VISUAL ===")
+JassyTab:CreateLabel("=== VISUAL ===")
 
 -- Full Bright
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Full Bright",
     CurrentValue = false,
     Callback = function(value)
@@ -492,7 +486,7 @@ MiscTab:CreateToggle({
 })
 
 -- No Fog
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "No Fog",
     CurrentValue = false,
     Callback = function(value)
@@ -509,7 +503,7 @@ MiscTab:CreateToggle({
 })
 
 -- Remove Grass
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Remove Grass",
     CurrentValue = false,
     Callback = function(value)
@@ -525,10 +519,10 @@ MiscTab:CreateToggle({
 })
 
 -- Utility Section
-MiscTab:CreateLabel("=== UTILITY ===")
+JassyTab:CreateLabel("=== UTILITY ===")
 
 -- Auto Respawn
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Auto Respawn",
     CurrentValue = false,
     Callback = function(value)
@@ -551,7 +545,7 @@ MiscTab:CreateToggle({
 })
 
 -- Anti AFK
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Anti AFK",
     CurrentValue = false,
     Callback = function(value)
@@ -572,7 +566,7 @@ MiscTab:CreateToggle({
 })
 
 -- Click Teleport
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Click Teleport",
     CurrentValue = false,
     Callback = function(value)
@@ -600,10 +594,10 @@ MiscTab:CreateToggle({
 })
 
 -- Character Section
-MiscTab:CreateLabel("=== CHARACTER ===")
+JassyTab:CreateLabel("=== CHARACTER ===")
 
 -- God Mode
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "God Mode",
     CurrentValue = false,
     Callback = function(value)
@@ -625,7 +619,7 @@ MiscTab:CreateToggle({
 })
 
 -- Invisible
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Invisible",
     CurrentValue = false,
     Callback = function(value)
@@ -644,7 +638,7 @@ MiscTab:CreateToggle({
 })
 
 -- Anti Knockback
-MiscTab:CreateToggle({
+JassyTab:CreateToggle({
     Name = "Anti Knockback",
     CurrentValue = false,
     Callback = function(value)
@@ -665,10 +659,10 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Jassy Tab
-local JassyTab = Window:CreateTab("Jassy", 4483362458)
+-- Jassy Section
+JassyTab:CreateLabel("=== JASSY ===")
 
-GitHubTab:CreateButton({
+JassyTab:CreateButton({
     Name = "Copy Discord invite to clipboard",
     Callback = function()
         setclipboard("https://discord.gg/RhjnE4tEQ8")
@@ -706,7 +700,7 @@ JassyTab:CreateButton({
 -- Credits
 JassyTab:CreateLabel("Script made by: Jassy")
 JassyTab:CreateLabel("Version: 1.0")
-JassyTab:CreateLabel("Features: ESP, Aimbot, Farm, Misc")
+JassyTab:CreateLabel("Features: ESP, Aimbot, Farm, Vape Misc")
 
 -- Status
 JassyTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
