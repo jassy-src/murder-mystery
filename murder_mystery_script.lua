@@ -291,6 +291,85 @@ local MiscTab = Window:CreateTab("Misc", 4483362458)
 -- Credits/Discord Tab
 local CreditsDiscordTab = Window:CreateTab("Credits/Discord", 4483362458)
 
+-- Jassy Section ❤
+CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
+
+CreditsDiscordTab:CreateButton({
+    Name = "Copy Discord invite to clipboard",
+    Callback = function()
+        setclipboard("https://discord.gg/RhjnE4tEQ8")
+        Rayfield:Notify({
+            Title = "Discord",
+            Content = "Copied Discord invite to clipboard!",
+            Duration = 5
+        })
+    end,
+})
+
+CreditsDiscordTab:CreateButton({
+    Name = "[GUI KEYBIND: K]",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Keybind",
+            Content = "GUI Keybind is K",
+            Duration = 5
+        })
+    end,
+})
+
+-- Credits
+CreditsDiscordTab:CreateLabel("❤ Script made by: Jassy")
+CreditsDiscordTab:CreateLabel("Version: 1.0")
+CreditsDiscordTab:CreateLabel("Property Of ScriptForge")
+
+-- Uninject Button
+CreditsDiscordTab:CreateButton({
+    Name = "[Uninject Script]",
+    Callback = function()
+        -- Stop all features
+        getgenv().RoleESPEnabled = false
+        getgenv().NameESPEnabled = false
+        getgenv().DistanceESPEnabled = false
+        getgenv().AimbotEnabled = false
+        getgenv().NoClipEnabled = false
+        getgenv().FlyEnabled = false
+        getgenv().AutoRespawnEnabled = false
+        getgenv().AntiAFKEnabled = false
+        getgenv().AntiKnockbackEnabled = false
+        getgenv().AntiCheatBypass = false
+        getgenv().FreeEmotesEnabled = false
+        
+        -- Stop animation system
+        if animationAPI then
+            animationAPI.reanimate(false)
+        end
+        
+        -- Clean up ESP
+        pcall(function()
+            if workspace:FindFirstChild("MM2_RoleESP_Highlights") then
+                workspace:FindFirstChild("MM2_RoleESP_Highlights"):Destroy()
+            end
+            if workspace:FindFirstChild("MM2_NameESP") then
+                workspace:FindFirstChild("MM2_NameESP"):Destroy()
+            end
+        end)
+        
+        -- Destroy UI
+        if Rayfield then
+            Rayfield:Destroy()
+        end
+        
+        Rayfield:Notify({
+            Title = "Script Uninjected",
+            Content = "Script has been successfully uninjected!",
+            Duration = 5
+        })
+    end,
+})
+
+-- Status
+CreditsDiscordTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
+
 -- Movement Section
 MiscTab:CreateLabel("=== MOVEMENT ===")
 
