@@ -1,6 +1,66 @@
 -- Roblox Murder Mystery Script - Rayfield UI Version
 print("[jassy's mm2] boot")
 
+local function _showError(title, msg)
+    pcall(function()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        local parent = game:GetService("CoreGui")
+        if lp then
+            local pg = lp:FindFirstChild("PlayerGui")
+            if pg then
+                parent = pg
+            end
+        end
+
+        local sg = Instance.new("ScreenGui")
+        sg.Name = "JassyMM2_Error"
+        sg.ResetOnSpawn = false
+        sg.Parent = parent
+
+        local f = Instance.new("Frame")
+        f.Size = UDim2.new(0, 420, 0, 140)
+        f.Position = UDim2.new(0.5, -210, 0.2, 0)
+        f.BackgroundColor3 = Color3.fromRGB(30, 10, 20)
+        f.BorderSizePixel = 0
+        f.Parent = sg
+
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 12)
+        c.Parent = f
+
+        local s = Instance.new("UIStroke")
+        s.Thickness = 1
+        s.Transparency = 0.4
+        s.Color = Color3.fromRGB(255, 105, 180)
+        s.Parent = f
+
+        local t = Instance.new("TextLabel")
+        t.BackgroundTransparency = 1
+        t.Size = UDim2.new(1, -20, 0, 28)
+        t.Position = UDim2.new(0, 10, 0, 8)
+        t.Font = Enum.Font.GothamBold
+        t.TextSize = 18
+        t.TextXAlignment = Enum.TextXAlignment.Left
+        t.TextColor3 = Color3.fromRGB(255, 255, 255)
+        t.Text = tostring(title or "Error")
+        t.Parent = f
+
+        local b = Instance.new("TextLabel")
+        b.BackgroundTransparency = 1
+        b.Size = UDim2.new(1, -20, 1, -46)
+        b.Position = UDim2.new(0, 10, 0, 40)
+        b.Font = Enum.Font.Gotham
+        b.TextSize = 14
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.TextYAlignment = Enum.TextYAlignment.Top
+        b.TextWrapped = true
+        b.TextColor3 = Color3.fromRGB(255, 220, 235)
+        b.Text = tostring(msg or "")
+        b.Parent = f
+    end)
+end
+
 local Rayfield
 do
     local ok, res = pcall(function()
@@ -22,6 +82,7 @@ do
 
     if not ok or not res then
         warn("[jassy's mm2] Rayfield failed to load:", res)
+        _showError("jassy's mm2", "Rayfield failed to load.\n\n" .. tostring(res))
         return
     end
     Rayfield = res
