@@ -1,5 +1,5 @@
--- Made by Jassy 🎯
--- Property of ScriptForge 🔥
+-- Made by Jassy 🔥
+-- Property of ScriptForge
 
 -- Anti-Cheat Bypass
 local function bypassAntiCheat()
@@ -36,10 +36,10 @@ end
 
 -- Test Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
-print(Rayfield and "Rayfield loaded" or "Rayfield failed to load")
+print(Rayfield and "[Rayfield loaded]" or "[Rayfield failed to load]")
 
 if not Rayfield then
-    game.Players.LocalPlayer:Kick("Rayfield UI library is currently down. Please try again later.")
+    game.Players.LocalPlayer:Kick("[Rayfield UI library is currently down. Please try again later.]")
     return
 end
 
@@ -52,7 +52,8 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "✨ Made by Jassy ✨",
     ConfigurationSaving = {
         Enabled = false,
-    }
+    },
+    BackgroundImage = "https://i.imgur.com/f6P9Vci.jpeg"
 })
 
 -- ESP Tab 🎯
@@ -290,21 +291,21 @@ local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
 -- Credits/Discord Tab 💬
 local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
 
--- Movement Section 🏃
-MiscTab:CreateLabel("=== 🏃 MOVEMENT 🏃 ===")
+-- Movement Section
+MiscTab:CreateLabel("=== MOVEMENT ===")
 
--- Anti-Cheat Bypass Toggle 🛡️
+-- Anti-Cheat Bypass Toggle
 MiscTab:CreateToggle({
-    Name = "🛡️ Anti-Cheat Bypass",
+    Name = "[Anti-Cheat Bypass]",
     CurrentValue = true,
     Callback = function(value)
         getgenv().AntiCheatBypass = value
     end,
 })
 
--- Position Lock (Bypass Invalid Position) 🔒
+-- Position Lock (Bypass Invalid Position)
 MiscTab:CreateButton({
-    Name = "🔒 Lock Position (Bypass Kick)",
+    Name = "[Lock Position (Bypass Kick)]",
     Callback = function()
         if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
@@ -323,9 +324,9 @@ MiscTab:CreateButton({
     end,
 })
 
--- No Clip 👻
+-- No Clip
 MiscTab:CreateToggle({
-    Name = "👻 No Clip",
+    Name = "[No Clip]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().NoClipEnabled = value
@@ -349,9 +350,9 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Fly 🦅
+-- Fly
 MiscTab:CreateToggle({
-    Name = "🦅 Fly",
+    Name = "[Fly]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().FlyEnabled = value
@@ -427,9 +428,9 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Speed Boost ⚡
+-- Speed Boost
 MiscTab:CreateSlider({
-    Name = "⚡ Speed Boost",
+    Name = "[Speed Boost]",
     Range = {16, 200},
     Increment = 4,
     CurrentValue = 16,
@@ -444,9 +445,9 @@ MiscTab:CreateSlider({
     end,
 })
 
--- Jump Power 🦘
+-- Jump Power
 MiscTab:CreateSlider({
-    Name = "🦘 Jump Power",
+    Name = "[Jump Power]",
     Range = {50, 200},
     Increment = 10,
     CurrentValue = 50,
@@ -461,21 +462,21 @@ MiscTab:CreateSlider({
     end,
 })
 
--- Infinite Jump 🦘
+-- Infinite Jump
 MiscTab:CreateToggle({
-    Name = "🦘 Infinite Jump",
+    Name = "[Infinite Jump]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().InfiniteJump = value
     end,
 })
 
--- Visual Section 👁️
-MiscTab:CreateLabel("=== 👁️ VISUAL 👁️ ===")
+-- Visual Section
+MiscTab:CreateLabel("=== VISUAL ===")
 
--- Full Bright ☀️
+-- Full Bright
 MiscTab:CreateToggle({
-    Name = "☀️ Full Bright",
+    Name = "[Full Bright]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().FullBrightEnabled = value
@@ -498,9 +499,9 @@ MiscTab:CreateToggle({
     end,
 })
 
--- No Fog 🌫️
+-- No Fog
 MiscTab:CreateToggle({
-    Name = "🌫️ No Fog",
+    Name = "[No Fog]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().NoFogEnabled = value
@@ -515,9 +516,9 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Remove Grass 🌱
+-- Remove Grass
 MiscTab:CreateToggle({
-    Name = "🌱 Remove Grass",
+    Name = "[Remove Grass]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().RemoveGrassEnabled = value
@@ -531,12 +532,12 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Utility Section 🔧
-MiscTab:CreateLabel("=== 🔧 UTILITY 🔧 ===")
+-- Utility Section
+MiscTab:CreateLabel("=== UTILITY ===")
 
--- Auto Respawn 💀
+-- Auto Respawn
 MiscTab:CreateToggle({
-    Name = "💀 Auto Respawn",
+    Name = "[Auto Respawn]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().AutoRespawnEnabled = value
@@ -557,9 +558,9 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Anti AFK ☕️
+-- Anti AFK
 MiscTab:CreateToggle({
-    Name = "☕️ Anti AFK",
+    Name = "[Anti AFK]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().AntiAFKEnabled = value
@@ -578,12 +579,12 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Character Section 👤
-MiscTab:CreateLabel("=== 👤 CHARACTER 👤 ===")
+-- Character Section
+MiscTab:CreateLabel("=== CHARACTER ===")
 
--- Invisible 👻
+-- Invisible
 MiscTab:CreateToggle({
-    Name = "👻 Invisible",
+    Name = "[Invisible]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().InvisibleEnabled = value
@@ -600,9 +601,9 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Anti Knockback 🛡️
+-- Anti Knockback
 MiscTab:CreateToggle({
-    Name = "🛡️ Anti Knockback",
+    Name = "[Anti Knockback]",
     CurrentValue = false,
     Callback = function(value)
         getgenv().AntiKnockbackEnabled = value
@@ -653,9 +654,9 @@ CreditsDiscordTab:CreateLabel("📜 Script made by: Jassy")
 CreditsDiscordTab:CreateLabel("📈 Version: 1.0")
 CreditsDiscordTab:CreateLabel("🔥 Property Of ScriptForge")
 
--- Uninject Button 🔓
+-- Uninject Button
 CreditsDiscordTab:CreateButton({
-    Name = "🔓 Uninject Script",
+    Name = "[Uninject Script]",
     Callback = function()
         -- Stop all features
         getgenv().RoleESPEnabled = false
