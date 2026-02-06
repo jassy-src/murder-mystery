@@ -1,4 +1,4 @@
--- Made by Jassy 🔥
+-- Made by Jassy ❤
 -- Property of ScriptForge
 
 -- Anti-Cheat Bypass
@@ -49,7 +49,7 @@ bypassAntiCheat()
 local Window = Rayfield:CreateWindow({
     Name = "🔫 MM2 Script 🔫",
     LoadingTitle = "⚡ MM2 Script ⚡",
-    LoadingSubtitle = "✨ Made by Jassy ✨",
+    LoadingSubtitle = "❤ Made by Jassy ❤",
     ConfigurationSaving = {
         Enabled = false,
     },
@@ -703,8 +703,30 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Jassy Section ✨
-CreditsDiscordTab:CreateLabel("=== ✨ JASSY ✨ ===")
+-- Anti Knockback
+MiscTab:CreateToggle({
+    Name = "[Anti Knockback]",
+    CurrentValue = false,
+    Callback = function(value)
+        getgenv().AntiKnockbackEnabled = value
+        if value then
+            coroutine.wrap(function()
+                while getgenv().AntiKnockbackEnabled do
+                    pcall(function()
+                        local char = game.Players.LocalPlayer.Character
+                        if char and char:FindFirstChild("HumanoidRootPart") then
+                            char:FindFirstChild("HumanoidRootPart").Velocity = Vector3.new(0, 0, 0)
+                        end
+                    end)
+                    task.wait(0.1)
+                end
+            end)()
+        end
+    end,
+})
+
+-- Jassy Section ❤
+CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
 
 CreditsDiscordTab:CreateButton({
     Name = "💬 Copy Discord invite to clipboard",
@@ -730,7 +752,7 @@ CreditsDiscordTab:CreateButton({
 })
 
 -- Credits 📜
-CreditsDiscordTab:CreateLabel("📜 Script made by: Jassy")
+CreditsDiscordTab:CreateLabel("❤ Script made by: Jassy")
 CreditsDiscordTab:CreateLabel("📈 Version: 1.0")
 CreditsDiscordTab:CreateLabel("🔥 Property Of ScriptForge")
 
@@ -784,9 +806,9 @@ CreditsDiscordTab:CreateLabel("Status: " .. (Rayfield and "Working" or "Error"))
 
 -- Notification on load
 Rayfield:Notify({
-    Title = "Jassy's MM2 Script",
+    Title = "❤ Jassy's MM2 Script",
     Content = "Script loaded successfully!",
     Duration = 5
 })
 
-print("Jassy's MM2 Script loaded - Rayfield status: " .. (Rayfield and "Working" or "Error"))
+print("❤ Jassy's MM2 Script loaded - Rayfield status: " .. (Rayfield and "Working" or "Error"))
