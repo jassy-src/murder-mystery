@@ -1,6 +1,46 @@
 -- Roblox Murder Mystery Script - Rayfield UI Version
 print("[jassy's mm2] boot")
 
+local function _showInjectedPing()
+    pcall(function()
+        local Players = game:GetService("Players")
+        local lp = Players.LocalPlayer
+        if not lp then return end
+
+        local pg = lp:WaitForChild("PlayerGui")
+        local sg = pg:FindFirstChild("JassyMM2_Ping")
+        if not sg then
+            sg = Instance.new("ScreenGui")
+            sg.Name = "JassyMM2_Ping"
+            sg.ResetOnSpawn = false
+            sg.Parent = pg
+        end
+
+        if sg:FindFirstChild("Label") then
+            return
+        end
+
+        local lbl = Instance.new("TextLabel")
+        lbl.Name = "Label"
+        lbl.BackgroundTransparency = 0.35
+        lbl.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+        lbl.BorderSizePixel = 0
+        lbl.Size = UDim2.new(0, 220, 0, 26)
+        lbl.Position = UDim2.new(0, 12, 0, 12)
+        lbl.Font = Enum.Font.GothamBold
+        lbl.TextSize = 14
+        lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lbl.Text = "♡ jassy's mm2 injected ♡"
+        lbl.Parent = sg
+
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 10)
+        c.Parent = lbl
+    end)
+end
+
+_showInjectedPing()
+
 local function _showError(title, msg)
     pcall(function()
         local Players = game:GetService("Players")
@@ -94,17 +134,28 @@ local OpeningSound = Instance.new("Sound")
 OpeningSound.SoundId = "rbxassetid://132529299748496" -- Your opening sound effect
 OpeningSound.Volume = 0.5
 OpeningSound.Parent = SoundService
-OpeningSound:Play()
+pcall(function()
+    OpeningSound:Play()
+end)
 
-local Window = Rayfield:CreateWindow({
-   Name = "jassy's mm2",
-   LoadingTitle = "jassy's mm2 ♡",
-   LoadingSubtitle = "♡ pink & hearty UI ♡",
-   ConfigurationSaving = {
-      Enabled = false,
-   },
-   Background = "rbxassetid://75487938851287" -- Your custom background image
-})
+local Window
+do
+    local ok, err = pcall(function()
+        Window = Rayfield:CreateWindow({
+           Name = "jassy's mm2",
+           LoadingTitle = "jassy's mm2 ♡",
+           LoadingSubtitle = "♡ pink & hearty UI ♡",
+           ConfigurationSaving = {
+              Enabled = false,
+           },
+           Background = "rbxassetid://75487938851287" -- Your custom background image
+        })
+    end)
+    if not ok or not Window then
+        _showError("jassy's mm2", "Rayfield window failed to create.\n\n" .. tostring(err))
+        return
+    end
+end
 
 -- Main Tab with enhanced styling
 local MainTab = Window:CreateTab("🎯 Main", 4483362458)
