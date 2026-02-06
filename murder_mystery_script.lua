@@ -1,13 +1,13 @@
 -- Murder Mystery 2 Script with ESP and Aimbot
--- GitHub: https://github.com/DarkNetworks/Orca
+-- GitHub: https://github.com/warechloe6-rgb/murder-mystery
 -- Version: 1.0
 
 local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 
 local Window = Rayfield:CreateWindow({
     Name = "MM2 Script",
-    LoadingTitle = "DarkNetworks",
-    LoadingSubtitle = "https://github.com/DarkNetworks/Orca",
+    LoadingTitle = "warechloe6-rgb",
+    LoadingSubtitle = "https://github.com/warechloe6-rgb/murder-mystery",
     ConfigurationSaving = {
         Enabled = false,
     }
@@ -362,7 +362,7 @@ local GitHubTab = Window:CreateTab("GitHub", 4483362458)
 GitHubTab:CreateButton({
     Name = "Copy GitHub to Clipboard",
     Callback = function()
-        setclipboard("https://github.com/DarkNetworks/Orca")
+        setclipboard("https://github.com/warechloe6-rgb/murder-mystery")
         Rayfield:Notify({
             Title = "GitHub",
             Content = "Copied GitHub link to clipboard!",
@@ -374,7 +374,7 @@ GitHubTab:CreateButton({
 GitHubTab:CreateButton({
     Name = "Get Latest Script",
     Callback = function()
-        setclipboard("loadstring(game:HttpGetAsync('https://raw.githubusercontent.com/DarkNetworks/Orca/master/public/latest.lua'))()")
+        setclipboard("loadstring(game:HttpGetAsync('https://raw.githubusercontent.com/warechloe6-rgb/murder-mystery/main/murder_mystery_script.lua'))()")
         Rayfield:Notify({
             Title = "Script Link",
             Content = "Copied latest script link to clipboard!",
@@ -384,13 +384,13 @@ GitHubTab:CreateButton({
 })
 
 -- Credits
-GitHubTab:CreateLabel("Script by DarkNetworks")
+GitHubTab:CreateLabel("Script by warechloe6-rgb")
 GitHubTab:CreateLabel("Version: 1.0")
 GitHubTab:CreateLabel("Features: ESP, Aimbot, Farm, Misc")
 
 -- Notification on load
 Rayfield:Notify({
     Title = "MM2 Script Loaded",
-    Content = "DarkNetworks MM2 Script with ESP and Aimbot",
+    Content = "warechloe6-rgb MM2 Script with ESP and Aimbot",
     Duration = 5
 })
