@@ -1,10 +1,10 @@
 -- Murder Mystery 2 Script with ESP and Aimbot
 -- Made by: Jassy
--- Property of ScriptForge
-
+-- GitHub: https://github.com/jassy-src/murder-mystery
+-- Version: 1.0
 
 -- Test Rayfield UI Library
-local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Rayfield = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/jassy-src/murder-mystery/main/Rayfield.lua"))()
 print(Rayfield and "Rayfield loaded" or "Rayfield failed to load")
 
 if not Rayfield then
