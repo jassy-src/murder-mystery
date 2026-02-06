@@ -1,6 +1,6 @@
 -- Murder Mystery 2 Script with ESP and Aimbot
 -- Made by: Jassy
--- GitHub: https://github.com/warechloe6-rgb/murder-mystery
+-- GitHub: https://github.com/jassy-src/murder-mystery
 -- Version: 1.0
 
 -- Test Rayfield UI Library
