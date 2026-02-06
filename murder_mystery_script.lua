@@ -1,7 +1,7 @@
 -- Murder Mystery 2 Script with ESP and Aimbot
 -- Made by: Jassy
--- GitHub: https://github.com/jassy-src/murder-mystery
--- Version: 1.0
+-- Property Of ScriptForge
+
 
 -- Test Rayfield UI Library
 local Rayfield = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/jassy-src/murder-mystery/main/Rayfield.lua"))()
@@ -252,6 +252,9 @@ end)
 
 -- Misc Tab
 local MiscTab = Window:CreateTab("Misc", 4483362458)
+
+-- Credits/Discord Tab
+local CreditsDiscordTab = Window:CreateTab("Credits/Discord", 4483362458)
 
 -- Movement Section
 MiscTab:CreateLabel("=== MOVEMENT ===")
@@ -554,9 +557,6 @@ MiscTab:CreateToggle({
         end
     end,
 })
-
--- Credits/Discord Tab
-local CreditsDiscordTab = Window:CreateTab("Credits/Discord", 4483362458)
 
 -- Jassy Section
 CreditsDiscordTab:CreateLabel("=== JASSY ===")
