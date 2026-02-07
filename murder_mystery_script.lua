@@ -403,9 +403,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
     end
 end)
 
--- Misc Tab 🛠️
-local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
-
 -- Teleport Tab 🌀
 local TeleportTab = Window:CreateTab("🌀 Teleport", 4483362458)
 
