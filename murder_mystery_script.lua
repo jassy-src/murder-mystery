@@ -436,7 +436,7 @@ TeleportTab:CreateButton({
     Name = "🔫 Teleport to Sheriff",
     Callback = function()
         for _, p in pairs(game.Players:GetPlayers()) do
-            if p.Character and (p.Character:FindFirstChild("Sheriff Gun") or p.Backpack:FindFirstChild("Sheriff Gun")) then
+            if p.Character and (p.Character:FindFirstChild("Gun") or p.Backpack:FindFirstChild("Gun")) then
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 0)
                 return
             end
