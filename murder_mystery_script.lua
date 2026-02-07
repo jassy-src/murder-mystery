@@ -341,6 +341,23 @@ AimbotTab:CreateToggle({
     end,
 })
 
+-- Aimbot Keybind (Q key)
+getgenv().AimbotEnabled = false -- Initialize aimbot state
+getgenv().AimbotSmoothness = 5 -- Initialize smoothness
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
+        getgenv().AimbotEnabled = not getgenv().AimbotEnabled
+        
+        -- Show notification when toggled
+        Rayfield:Notify({
+            Title = "Aimbot",
+            Content = "Aimbot " .. (getgenv().AimbotEnabled and "Enabled" or "Disabled"),
+            Duration = 2
+        })
+    end
+end)
+
 -- Aimbot Function
 local camera = game.Workspace.CurrentCamera
 local target = nil
@@ -361,10 +378,14 @@ local function getClosestPlayer()
                     end
                 end
                 
-                local distance = (char:FindFirstChild("HumanoidRootPart").Position - camera.CFrame.Position).Magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestPlayer = player
+                -- Check if player is visible (not behind walls)
+                local head = char:FindFirstChild("Head")
+                if head then
+                    local distance = (head.Position - camera.CFrame.Position).Magnitude
+                    if distance < closestDistance and distance < 200 then -- Max aimbot range
+                        closestDistance = distance
+                        closestPlayer = player
+                    end
                 end
             end
         end
@@ -817,7 +838,6 @@ MiscTab:CreateToggle({
     Callback = function(value)
         getgenv().AutoGrabGunEnabled = value
         if value then
-            getgenv().OriginalPosition = nil
             getgenv().SheriffDead = false
             getgenv().IsGrabbingGun = false
             
@@ -828,11 +848,6 @@ MiscTab:CreateToggle({
                         if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
                             task.wait(1)
                             return
-                        end
-                        
-                        -- Store original position if not already stored and not currently grabbing
-                        if not getgenv().OriginalPosition and not getgenv().IsGrabbingGun then
-                            getgenv().OriginalPosition = localChar:FindFirstChild("HumanoidRootPart").Position
                         end
                         
                         -- Skip if currently grabbing a gun
@@ -882,24 +897,17 @@ MiscTab:CreateToggle({
                             
                             local hrp = localChar:FindFirstChild("HumanoidRootPart")
                             if hrp then
-                                -- Teleport to gun
+                                -- Teleport to gun and stay there
                                 hrp.CFrame = CFrame.new(gunPosition + Vector3.new(0, 2, 0))
                                 task.wait(0.1)
                                 
-                                -- Try to pick up gun multiple times with improved logic
+                                -- Try to pick up gun multiple times
                                 local pickedUp = false
                                 for i = 1, 10 do
                                     if gunObject and gunObject.Parent then
-                                        -- Move closer to gun if not close enough
                                         local handle = gunObject:FindFirstChild("Handle") or gunObject:FindFirstChildWhichIsA("BasePart")
                                         if handle then
-                                            local distance = (hrp.Position - handle.Position).Magnitude
-                                            if distance > 5 then
-                                                hrp.CFrame = CFrame.new(handle.Position + Vector3.new(0, 2, 0))
-                                                task.wait(0.05)
-                                            end
-                                            
-                                            -- Try to pick up by moving to gun position
+                                            -- Move to gun position
                                             hrp.CFrame = CFrame.new(handle.Position)
                                             task.wait(0.1)
                                             
@@ -920,12 +928,6 @@ MiscTab:CreateToggle({
                                     task.wait(0.1)
                                 end
                                 
-                                -- Teleport back to original position
-                                if getgenv().OriginalPosition then
-                                    hrp.CFrame = CFrame.new(getgenv().OriginalPosition)
-                                    task.wait(0.1)
-                                end
-                                
                                 -- Notify result
                                 if pickedUp then
                                     Rayfield:Notify({
@@ -943,7 +945,6 @@ MiscTab:CreateToggle({
                                 
                                 -- Reset for next round
                                 getgenv().SheriffDead = false
-                                getgenv().OriginalPosition = nil
                                 getgenv().IsGrabbingGun = false
                             else
                                 getgenv().IsGrabbingGun = false
@@ -962,7 +963,6 @@ MiscTab:CreateToggle({
         else
             -- Reset when disabled
             getgenv().SheriffDead = false
-            getgenv().OriginalPosition = nil
             getgenv().IsGrabbingGun = false
         end
     end,
