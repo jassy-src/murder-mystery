@@ -327,7 +327,7 @@ AimbotTab:CreateSlider({
 
 AimbotTab:CreateToggle({
     Name = "🎯 Target Murderers Only",
-    CurrentValue = true,
+    CurrentValue = false,
     Callback = function(value)
         getgenv().TargetMurderersOnly = value
     end,
