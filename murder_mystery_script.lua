@@ -320,51 +320,21 @@ end)
 local AimbotTab = Window:CreateTab("🎯 Aimbot", 4483362458)
 
 -- Aimbot Keybind Info
-AimbotTab:CreateLabel("🎖 Aimbot (Keybind: Q) - Enhanced Lock-On System")
+AimbotTab:CreateLabel("🎖 Aimbot (Keybind: Q)")
 
 -- Aimbot Keybind (Q key)
 getgenv().AimbotEnabled = false -- Initialize aimbot state
 getgenv().AimbotSmoothness = 5 -- Initialize smoothness
-getgenv().LockedTarget = nil -- Initialize locked target
-getgenv().IsLocked = false -- Initialize lock state
-
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
-        if getgenv().IsLocked then
-            -- Unlock if currently locked
-            getgenv().LockedTarget = nil
-            getgenv().IsLocked = false
-            getgenv().AimbotEnabled = false
-            
-            -- Show unlock notification
-            Rayfield:Notify({
-                Title = "🎯 Lock-On",
-                Content = "Target Unlocked!",
-                Duration = 2
-            })
-        else
-            -- Find and lock onto closest target
-            local closestPlayer = getClosestPlayer()
-            if closestPlayer then
-                getgenv().LockedTarget = closestPlayer
-                getgenv().IsLocked = true
-                getgenv().AimbotEnabled = true
-                
-                -- Show lock notification
-                Rayfield:Notify({
-                    Title = "🎯 Lock-On",
-                    Content = "Locked onto: " .. closestPlayer.Name,
-                    Duration = 2
-                })
-            else
-                -- No target found
-                Rayfield:Notify({
-                    Title = "🎯 Lock-On",
-                    Content = "No valid target found!",
-                    Duration = 2
-                })
-            end
-        end
+        getgenv().AimbotEnabled = not getgenv().AimbotEnabled
+        
+        -- Show notification when toggled
+        Rayfield:Notify({
+            Title = "Aimbot",
+            Content = "Aimbot " .. (getgenv().AimbotEnabled and "Enabled" or "Disabled"),
+            Duration = 2
+        })
     end
 end)
 
@@ -443,53 +413,27 @@ local function getClosestPlayer()
 end
 
 game:GetService("RunService").RenderStepped:Connect(function()
-    if getgenv().AimbotEnabled and getgenv().IsLocked and getgenv().LockedTarget then
-        -- Use the locked target instead of finding closest player
-        local targetPlayer = getgenv().LockedTarget
-        local char = targetPlayer.Character
-        if char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
-            local humanoid = char:FindFirstChild("Humanoid")
-            
-            -- Unlock if target is dead
-            if humanoid and humanoid.Health <= 0 then
-                getgenv().LockedTarget = nil
-                getgenv().IsLocked = false
-                getgenv().AimbotEnabled = false
+    if getgenv().AimbotEnabled then
+        local closestPlayer = getClosestPlayer()
+        if closestPlayer then
+            local char = closestPlayer.Character
+            if char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
+                local targetPos = char:FindFirstChild("Head").Position
+                local currentCFrame = camera.CFrame
                 
-                Rayfield:Notify({
-                    Title = "🎯 Lock-On",
-                    Content = "Target died - Unlocked!",
-                    Duration = 2
-                })
-                return
-            end
-            
-            local targetPos = char:FindFirstChild("Head").Position
-            local currentCFrame = camera.CFrame
-            
-            -- Check if target is visible (not behind walls)
-            local localHrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if localHrp then
-                local raycastResult = workspace:Raycast(localHrp.Position, targetPos - localHrp.Position, RaycastParams.new())
-                if not raycastResult or raycastResult.Instance.Parent == char then
-                    local smoothness = getgenv().AimbotSmoothness or 5
-                    -- Fix smoothness: higher value = smoother (slower) aiming
-                    local lerpAmount = math.clamp(0.05 / smoothness, 0.01, 0.3)
-                    local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
-                    camera.CFrame = currentCFrame:Lerp(lookAt, lerpAmount)
+                -- Check if target is visible (not behind walls)
+                local localHrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if localHrp then
+                    local raycastResult = workspace:Raycast(localHrp.Position, targetPos - localHrp.Position, RaycastParams.new())
+                    if not raycastResult or raycastResult.Instance.Parent == char then
+                        local smoothness = getgenv().AimbotSmoothness or 5
+                        -- Fix smoothness: higher value = smoother (slower) aiming
+                        local lerpAmount = math.clamp(0.05 / smoothness, 0.01, 0.3)
+                        local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
+                        camera.CFrame = currentCFrame:Lerp(lookAt, lerpAmount)
+                    end
                 end
             end
-        else
-            -- Target lost character, unlock
-            getgenv().LockedTarget = nil
-            getgenv().IsLocked = false
-            getgenv().AimbotEnabled = false
-            
-            Rayfield:Notify({
-                Title = "🎯 Lock-On",
-                Content = "Target lost - Unlocked!",
-                Duration = 2
-            })
         end
     end
 end)
