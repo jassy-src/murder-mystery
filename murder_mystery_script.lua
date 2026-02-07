@@ -512,9 +512,6 @@ TeleportTab:CreateButton({
 })
 
 -- Credits/Discord Tab 💬
-local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
-
--- Movement Section
 MiscTab:CreateLabel("=== MOVEMENT ===")
 
 -- Anti-Cheat Bypass Toggle
