@@ -406,6 +406,111 @@ end)
 -- Misc Tab 🛠️
 local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
 
+-- Teleport Tab 🌀
+local TeleportTab = Window:CreateTab("🌀 Teleport", 4483362458)
+
+-- Teleport to Sheriff
+TeleportTab:CreateButton({
+    Name = "🔫 Teleport to Sheriff",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        local localChar = localPlayer.Character
+        
+        if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Character not found!",
+                Duration = 3
+            })
+            return
+        end
+        
+        -- Find sheriff (player with gun)
+        local sheriff = nil
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= localPlayer then
+                local char = player.Character
+                if char then
+                    local hasGun = char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
+                    if hasGun then
+                        sheriff = player
+                        break
+                    end
+                end
+            end
+        end
+        
+        if sheriff and sheriff.Character and sheriff.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = localChar:FindFirstChild("HumanoidRootPart")
+            local sheriffHrp = sheriff.Character:FindFirstChild("HumanoidRootPart")
+            hrp.CFrame = CFrame.new(sheriffHrp.Position + Vector3.new(0, 5, 0))
+            
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Teleported to Sheriff!",
+                Duration = 3
+            })
+        else
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Sheriff not found!",
+                Duration = 3
+            })
+        end
+    end,
+})
+
+-- Teleport to Murderer
+TeleportTab:CreateButton({
+    Name = "🔪 Teleport to Murderer",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        local localChar = localPlayer.Character
+        
+        if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Character not found!",
+                Duration = 3
+            })
+            return
+        end
+        
+        -- Find murderer (player with knife)
+        local murderer = nil
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= localPlayer then
+                local char = player.Character
+                if char then
+                    local hasKnife = char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+                    if hasKnife then
+                        murderer = player
+                        break
+                    end
+                end
+            end
+        end
+        
+        if murderer and murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = localChar:FindFirstChild("HumanoidRootPart")
+            local murdererHrp = murderer.Character:FindFirstChild("HumanoidRootPart")
+            hrp.CFrame = CFrame.new(murdererHrp.Position + Vector3.new(0, 5, 0))
+            
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Teleported to Murderer!",
+                Duration = 3
+            })
+        else
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Murderer not found!",
+                Duration = 3
+            })
+        end
+    end,
+})
+
 -- Credits/Discord Tab 💬
 local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
 
