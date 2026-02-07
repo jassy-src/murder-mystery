@@ -433,7 +433,7 @@ game.Players.PlayerAdded:Connect(updateDropdown)
 game.Players.PlayerRemoving:Connect(updateDropdown)
 
 TeleportTab:CreateButton({
-    Name = "",
+    Name = "🔫 Teleport to Sheriff",
     Callback = function()
         for _, p in pairs(game.Players:GetPlayers()) do
             if p.Character and (p.Character:FindFirstChild("Sheriff Gun") or p.Backpack:FindFirstChild("Sheriff Gun")) then
