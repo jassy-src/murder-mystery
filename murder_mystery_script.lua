@@ -848,6 +848,17 @@ MiscTab:CreateToggle({
                             return
                         end
                         
+                        -- Check if player is innocent (no knife or gun)
+                        local localPlayer = game.Players.LocalPlayer
+                        local hasKnife = localChar:FindFirstChild("Knife") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Knife"))
+                        local hasGun = localChar:FindFirstChild("Gun") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Gun"))
+                        
+                        -- Only work if innocent (no knife and no gun)
+                        if hasKnife or hasGun then
+                            task.wait(0.5) -- Check less frequently if not innocent
+                            return
+                        end
+                        
                         -- Find dropped gun in workspace and all subfolders
                         local gunObject = nil
                         local gunPosition = nil
