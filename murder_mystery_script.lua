@@ -460,11 +460,6 @@ TeleportTab:CreateButton({
 })
 
 -- Credits/Discord Tab 💬
-local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
-
--- Jassy Section ✨
-CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
-
 -- Misc Tab 🛠️
 local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
 
@@ -898,7 +893,7 @@ MiscTab:CreateButton({
             return
         end
         
-        local hasKnife = localChar:FindFirstChild("Knife") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Knife"))
+        local hasKnife = localChar:FindFirstChild("Knife") or (localPlayer:FindFirstChild("Backpack") and localPlayer.Backpack:FindFirstChild("Knife"))
         local hasGun = localChar:FindFirstChild("Gun") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Gun"))
         
         -- Only work if innocent (no knife and no gun)
@@ -1102,6 +1097,9 @@ MiscTab:CreateToggle({
         end
     end,
 })
+
+-- Credits/Discord Tab 💬
+local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
 
 -- Jassy Section ✨
 CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
