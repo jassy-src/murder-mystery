@@ -46,6 +46,15 @@ end
 -- Activate anti-cheat bypass
 bypassAntiCheat()
 
+-- GUI Keybind (K key)
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.K then
+        if Rayfield then
+            Rayfield:Toggle()
+        end
+    end
+end)
+
 local Window = Rayfield:CreateWindow({
     Name = "🔫 MM2 Script 🔫",
     LoadingTitle = "⚡ MM2 Script ⚡",
@@ -313,6 +322,22 @@ local AimbotTab = Window:CreateTab("🎯 Aimbot", 4483362458)
 -- Aimbot Keybind Info
 AimbotTab:CreateLabel("🎖 Aimbot (Keybind: Q)")
 
+-- Aimbot Keybind (Q key)
+getgenv().AimbotEnabled = false -- Initialize aimbot state
+getgenv().AimbotSmoothness = 5 -- Initialize smoothness
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
+        getgenv().AimbotEnabled = not getgenv().AimbotEnabled
+        
+        -- Show notification when toggled
+        Rayfield:Notify({
+            Title = "Aimbot",
+            Content = "Aimbot " .. (getgenv().AimbotEnabled and "Enabled" or "Disabled"),
+            Duration = 2
+        })
+    end
+end)
+
 -- Aimbot Toggle 🎖
 AimbotTab:CreateToggle({
     Name = "🎖 Aimbot",
@@ -348,11 +373,22 @@ local target = nil
 local function getClosestPlayer()
     local closestPlayer = nil
     local closestDistance = math.huge
+    local localChar = game.Players.LocalPlayer.Character
+    local localHrp = localChar and localChar:FindFirstChild("HumanoidRootPart")
+    
+    if not localHrp then return nil end
     
     for _, player in ipairs(game.Players:GetPlayers()) do
         if player ~= game.Players.LocalPlayer then
             local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+                local humanoid = char:FindFirstChild("Humanoid")
+                
+                -- Skip dead players
+                if humanoid.Health <= 0 then
+                    continue
+                end
+                
                 -- Check if target is murderer (if setting is enabled)
                 if getgenv().TargetMurderersOnly then
                     local knife = char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
@@ -361,8 +397,11 @@ local function getClosestPlayer()
                     end
                 end
                 
-                local distance = (char:FindFirstChild("HumanoidRootPart").Position - camera.CFrame.Position).Magnitude
-                if distance < closestDistance then
+                local targetHrp = char:FindFirstChild("HumanoidRootPart")
+                local distance = (targetHrp.Position - localHrp.Position).Magnitude
+                
+                -- Only target players within reasonable range (500 studs)
+                if distance < 500 and distance < closestDistance then
                     closestDistance = distance
                     closestPlayer = player
                 end
@@ -378,17 +417,90 @@ game:GetService("RunService").RenderStepped:Connect(function()
         local closestPlayer = getClosestPlayer()
         if closestPlayer then
             local char = closestPlayer.Character
-            if char and char:FindFirstChild("Head") then
+            if char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
                 local targetPos = char:FindFirstChild("Head").Position
                 local currentCFrame = camera.CFrame
-                local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
                 
-                local smoothness = getgenv().AimbotSmoothness or 5
-                camera.CFrame = currentCFrame:Lerp(lookAt, 0.1 / smoothness)
+                -- Check if target is visible (not behind walls)
+                local localHrp = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if localHrp then
+                    local raycastResult = workspace:Raycast(localHrp.Position, targetPos - localHrp.Position, RaycastParams.new())
+                    if not raycastResult or raycastResult.Instance.Parent == char then
+                        local smoothness = getgenv().AimbotSmoothness or 5
+                        -- Fix smoothness: higher value = smoother (slower) aiming
+                        local lerpAmount = math.clamp(0.05 / smoothness, 0.01, 0.3)
+                        local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
+                        camera.CFrame = currentCFrame:Lerp(lookAt, lerpAmount)
+                    end
+                end
             end
         end
     end
 end)
+
+-- Teleport Tab 🌀
+local TeleportTab = Window:CreateTab("🌀 Teleport", 4483362458)
+
+-- Teleport to Player Section
+TeleportTab:CreateLabel("👥 Teleport to Player:")
+
+-- Create individual teleport buttons for common player slots
+local teleportButtons = {}
+
+local function createTeleportButton(playerName)
+    return TeleportTab:CreateButton({
+        Name = "📍 " .. playerName,
+        Callback = function()
+            local targetPlayer = game.Players:FindFirstChild(playerName)
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local localChar = game.Players.LocalPlayer.Character
+                if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                    localChar:FindFirstChild("HumanoidRootPart").CFrame = targetPlayer.Character:FindFirstChild("HumanoidRootPart").CFrame
+                    
+                    Rayfield:Notify({
+                        Title = "Teleport",
+                        Content = "Teleported to " .. playerName,
+                        Duration = 3
+                    })
+                end
+            else
+                Rayfield:Notify({
+                    Title = "Teleport Failed",
+                    Content = playerName .. " not found or no character",
+                    Duration = 3
+                })
+            end
+        end,
+    })
+end
+
+-- Create buttons for players currently in game
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        table.insert(teleportButtons, createTeleportButton(player.Name))
+    end
+end
+
+-- Refresh button
+TeleportTab:CreateButton({
+    Name = "🔄 Refresh Players",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Refresh",
+            Content = "Check the player list below!",
+            Duration = 2
+        })
+    end,
+})
+
+-- Player list label (updates when refresh is clicked)
+TeleportTab:CreateLabel("Current players in server:")
+for _, player in ipairs(game.Players:GetPlayers()) do
+    if player ~= game.Players.LocalPlayer then
+        TeleportTab:CreateLabel("• " .. player.Name)
+    end
+end
+
 
 -- Misc Tab 🛠️
 local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
@@ -817,11 +929,10 @@ MiscTab:CreateToggle({
     Callback = function(value)
         getgenv().AutoGrabGunEnabled = value
         if value then
-            getgenv().OriginalPosition = nil
             getgenv().SheriffDead = false
             getgenv().IsGrabbingGun = false
             
-            coroutine.wrap(function()
+            task.spawn(function()
                 while getgenv().AutoGrabGunEnabled do
                     pcall(function()
                         local localChar = game.Players.LocalPlayer.Character
@@ -830,18 +941,15 @@ MiscTab:CreateToggle({
                             return
                         end
                         
-                        -- Store original position if not already stored and not currently grabbing
                         if not getgenv().OriginalPosition and not getgenv().IsGrabbingGun then
                             getgenv().OriginalPosition = localChar:FindFirstChild("HumanoidRootPart").Position
                         end
                         
-                        -- Skip if currently grabbing a gun
                         if getgenv().IsGrabbingGun then
                             task.wait(0.1)
                             return
                         end
                         
-                        -- Find dropped gun in workspace and all subfolders
                         local gunObject = nil
                         local gunPosition = nil
                         
@@ -856,14 +964,12 @@ MiscTab:CreateToggle({
                             end
                         end
                         
-                        -- Check if any player had a gun and is now dead
                         local sheriffDead = false
                         for _, player in ipairs(game.Players:GetPlayers()) do
                             if player ~= game.Players.LocalPlayer then
                                 local char = player.Character
                                 if char and char:FindFirstChildOfClass("Humanoid") then
                                     local humanoid = char:FindFirstChildOfClass("Humanoid")
-                                    -- Check if player is the sheriff (has gun in backpack or died with gun)
                                     local hadGun = player.Backpack:FindFirstChild("Gun") ~= nil or char:FindFirstChild("Gun") ~= nil
                                     local isDead = humanoid.Health <= 0
                                     
@@ -875,22 +981,18 @@ MiscTab:CreateToggle({
                             end
                         end
                         
-                        -- If gun exists and sheriff is dead (or we already know sheriff is dead), grab it
                         if gunObject and gunPosition and (sheriffDead or getgenv().SheriffDead) then
                             getgenv().SheriffDead = true
                             getgenv().IsGrabbingGun = true
                             
                             local hrp = localChar:FindFirstChild("HumanoidRootPart")
                             if hrp then
-                                -- Teleport to gun
                                 hrp.CFrame = CFrame.new(gunPosition + Vector3.new(0, 2, 0))
                                 task.wait(0.1)
                                 
-                                -- Try to pick up gun multiple times with improved logic
                                 local pickedUp = false
                                 for i = 1, 10 do
                                     if gunObject and gunObject.Parent then
-                                        -- Move closer to gun if not close enough
                                         local handle = gunObject:FindFirstChild("Handle") or gunObject:FindFirstChildWhichIsA("BasePart")
                                         if handle then
                                             local distance = (hrp.Position - handle.Position).Magnitude
@@ -899,17 +1001,14 @@ MiscTab:CreateToggle({
                                                 task.wait(0.05)
                                             end
                                             
-                                            -- Try to pick up by moving to gun position
                                             hrp.CFrame = CFrame.new(handle.Position)
                                             task.wait(0.1)
                                             
-                                            -- Check if gun is now in backpack or equipped
                                             local backpackGun = game.Players.LocalPlayer.Backpack:FindFirstChild("Gun")
                                             local equippedGun = localChar:FindFirstChild("Gun")
                                             
                                             if backpackGun or equippedGun then
                                                 pickedUp = true
-                                                -- Equip the gun if it's in backpack
                                                 if backpackGun then
                                                     backpackGun.Parent = localChar
                                                 end
@@ -920,17 +1019,15 @@ MiscTab:CreateToggle({
                                     task.wait(0.1)
                                 end
                                 
-                                -- Teleport back to original position
                                 if getgenv().OriginalPosition then
                                     hrp.CFrame = CFrame.new(getgenv().OriginalPosition)
                                     task.wait(0.1)
                                 end
                                 
-                                -- Notify result
                                 if pickedUp then
                                     Rayfield:Notify({
                                         Title = "Auto Grab Gun",
-                                        Content = "Successfully grabbed the gun!",
+                                        Content = "Successfully grabbed gun!",
                                         Duration = 3
                                     })
                                 else
@@ -941,7 +1038,6 @@ MiscTab:CreateToggle({
                                     })
                                 end
                                 
-                                -- Reset for next round
                                 getgenv().SheriffDead = false
                                 getgenv().OriginalPosition = nil
                                 getgenv().IsGrabbingGun = false
@@ -950,17 +1046,15 @@ MiscTab:CreateToggle({
                             end
                         end
                         
-                        -- Reset if no gun found and sheriff not dead
                         if not gunObject and not sheriffDead then
                             getgenv().SheriffDead = false
                             getgenv().IsGrabbingGun = false
                         end
                     end)
-                    task.wait(0.1) -- Faster checking
+                    task.wait(0.1)
                 end
-            end)()
+            end)
         else
-            -- Reset when disabled
             getgenv().SheriffDead = false
             getgenv().OriginalPosition = nil
             getgenv().IsGrabbingGun = false
@@ -1168,3 +1262,4 @@ Rayfield:Notify({
 })
 
 print("Jassy's ❤ MM2 Script loaded - Rayfield status: " .. (Rayfield and "Working" or "Error"))
+ 
