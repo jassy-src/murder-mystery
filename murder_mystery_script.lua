@@ -823,150 +823,143 @@ MiscTab:CreateToggle({
     end,
 })
 
--- Auto Grab Gun
-MiscTab:CreateToggle({
-    Name = "[Auto Grab Gun]",
-    CurrentValue = false,
-    Callback = function(value)
-        getgenv().AutoGrabGunEnabled = value
-        if value then
-            getgenv().SheriffDead = false
-            getgenv().IsGrabbingGun = false
-            
-            coroutine.wrap(function()
-                while getgenv().AutoGrabGunEnabled do
-                    pcall(function()
-                        local localChar = game.Players.LocalPlayer.Character
-                        if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
-                            task.wait(1)
-                            return
-                        end
-                        
-                        -- Skip if currently grabbing a gun
-                        if getgenv().IsGrabbingGun then
-                            task.wait(0.1)
-                            return
-                        end
-                        
-                        -- Check if player is innocent (no knife or gun)
-                        local localPlayer = game.Players.LocalPlayer
-                        local hasKnife = localChar:FindFirstChild("Knife") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Knife"))
-                        local hasGun = localChar:FindFirstChild("Gun") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Gun"))
-                        
-                        -- Only work if innocent (no knife and no gun)
-                        if hasKnife or hasGun then
-                            task.wait(0.5) -- Check less frequently if not innocent
-                            return
-                        end
-                        
-                        -- Find dropped gun in workspace and all subfolders
-                        local gunObject = nil
-                        local gunPosition = nil
-                        
-                        for _, obj in ipairs(workspace:GetDescendants()) do
-                            if obj:IsA("Tool") and (obj.Name == "Gun" or obj:FindFirstChild("Gun")) then
-                                local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildWhichIsA("BasePart")
-                                if handle then
-                                    gunObject = obj
-                                    gunPosition = handle.Position
-                                    break
-                                end
-                            end
-                        end
-                        
-                        -- Check if any player had a gun and is now dead
-                        local sheriffDead = false
-                        for _, player in ipairs(game.Players:GetPlayers()) do
-                            if player ~= game.Players.LocalPlayer then
-                                local char = player.Character
-                                if char and char:FindFirstChildOfClass("Humanoid") then
-                                    local humanoid = char:FindFirstChildOfClass("Humanoid")
-                                    -- Check if player is the sheriff (has gun in backpack or died with gun)
-                                    local hadGun = player.Backpack:FindFirstChild("Gun") ~= nil or char:FindFirstChild("Gun") ~= nil
-                                    local isDead = humanoid.Health <= 0
-                                    
-                                    if hadGun and isDead then
-                                        sheriffDead = true
-                                        break
-                                    end
-                                end
-                            end
-                        end
-                        
-                        -- If gun exists and sheriff is dead (or we already know sheriff is dead), grab it
-                        if gunObject and gunPosition and (sheriffDead or getgenv().SheriffDead) then
-                            getgenv().SheriffDead = true
-                            getgenv().IsGrabbingGun = true
-                            
-                            local hrp = localChar:FindFirstChild("HumanoidRootPart")
-                            if hrp then
-                                -- Teleport to gun and stay there
-                                hrp.CFrame = CFrame.new(gunPosition + Vector3.new(0, 2, 0))
-                                task.wait(0.1)
-                                
-                                -- Try to pick up gun multiple times
-                                local pickedUp = false
-                                for i = 1, 10 do
-                                    if gunObject and gunObject.Parent then
-                                        local handle = gunObject:FindFirstChild("Handle") or gunObject:FindFirstChildWhichIsA("BasePart")
-                                        if handle then
-                                            -- Move to gun position
-                                            hrp.CFrame = CFrame.new(handle.Position)
-                                            task.wait(0.1)
-                                            
-                                            -- Check if gun is now in backpack or equipped
-                                            local backpackGun = game.Players.LocalPlayer.Backpack:FindFirstChild("Gun")
-                                            local equippedGun = localChar:FindFirstChild("Gun")
-                                            
-                                            if backpackGun or equippedGun then
-                                                pickedUp = true
-                                                -- Equip the gun if it's in backpack
-                                                if backpackGun then
-                                                    backpackGun.Parent = localChar
-                                                end
-                                                break
-                                            end
-                                        end
-                                    end
-                                    task.wait(0.1)
-                                end
-                                
-                                -- Notify result
-                                if pickedUp then
-                                    Rayfield:Notify({
-                                        Title = "Auto Grab Gun",
-                                        Content = "Successfully grabbed the gun!",
-                                        Duration = 3
-                                    })
-                                else
-                                    Rayfield:Notify({
-                                        Title = "Auto Grab Gun",
-                                        Content = "Failed to grab gun",
-                                        Duration = 3
-                                    })
-                                end
-                                
-                                -- Reset for next round
-                                getgenv().SheriffDead = false
-                                getgenv().IsGrabbingGun = false
-                            else
-                                getgenv().IsGrabbingGun = false
-                            end
-                        end
-                        
-                        -- Reset if no gun found and sheriff not dead
-                        if not gunObject and not sheriffDead then
-                            getgenv().SheriffDead = false
-                            getgenv().IsGrabbingGun = false
-                        end
-                    end)
-                    task.wait(0.1) -- Faster checking
+-- Auto Grab Gun Button
+MiscTab:CreateButton({
+    Name = "[Grab Gun (Innocent Only)]",
+    Callback = function()
+        -- Check if player is innocent (no knife or gun)
+        local localPlayer = game.Players.LocalPlayer
+        local localChar = localPlayer.Character
+        if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then
+            Rayfield:Notify({
+                Title = "Grab Gun",
+                Content = "Character not found!",
+                Duration = 3
+            })
+            return
+        end
+        
+        local hasKnife = localChar:FindFirstChild("Knife") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Knife"))
+        local hasGun = localChar:FindFirstChild("Gun") or (localPlayer.Backpack and localPlayer.Backpack:FindFirstChild("Gun"))
+        
+        -- Only work if innocent (no knife and no gun)
+        if hasKnife then
+            Rayfield:Notify({
+                Title = "Grab Gun",
+                Content = "You are the murderer! Cannot grab gun.",
+                Duration = 3
+            })
+            return
+        end
+        
+        if hasGun then
+            Rayfield:Notify({
+                Title = "Grab Gun", 
+                Content = "You already have the gun!",
+                Duration = 3
+            })
+            return
+        end
+        
+        -- Find dropped gun in workspace and all subfolders
+        local gunObject = nil
+        local gunPosition = nil
+        
+        for _, obj in ipairs(workspace:GetDescendants()) do
+            if obj:IsA("Tool") and (obj.Name == "Gun" or obj:FindFirstChild("Gun")) then
+                local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildWhichIsA("BasePart")
+                if handle then
+                    gunObject = obj
+                    gunPosition = handle.Position
+                    break
                 end
-            end)()
-        else
-            -- Reset when disabled
-            getgenv().SheriffDead = false
-            getgenv().IsGrabbingGun = false
+            end
+        end
+        
+        -- Check if sheriff is dead
+        local sheriffDead = false
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= localPlayer then
+                local char = player.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    local hadGun = player.Backpack:FindFirstChild("Gun") ~= nil or char:FindFirstChild("Gun") ~= nil
+                    local isDead = humanoid.Health <= 0
+                    
+                    if hadGun and isDead then
+                        sheriffDead = true
+                        break
+                    end
+                end
+            end
+        end
+        
+        if not gunObject or not gunPosition then
+            Rayfield:Notify({
+                Title = "Grab Gun",
+                Content = "No dropped gun found!",
+                Duration = 3
+            })
+            return
+        end
+        
+        if not sheriffDead then
+            Rayfield:Notify({
+                Title = "Grab Gun",
+                Content = "Sheriff is not dead yet!",
+                Duration = 3
+            })
+            return
+        end
+        
+        -- Teleport to gun and grab it
+        local hrp = localChar:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            -- Teleport to gun
+            hrp.CFrame = CFrame.new(gunPosition + Vector3.new(0, 2, 0))
+            task.wait(0.1)
+            
+            -- Try to pick up gun multiple times
+            local pickedUp = false
+            for i = 1, 10 do
+                if gunObject and gunObject.Parent then
+                    local handle = gunObject:FindFirstChild("Handle") or gunObject:FindFirstChildWhichIsA("BasePart")
+                    if handle then
+                        -- Move to gun position
+                        hrp.CFrame = CFrame.new(handle.Position)
+                        task.wait(0.1)
+                        
+                        -- Check if gun is now in backpack or equipped
+                        local backpackGun = localPlayer.Backpack:FindFirstChild("Gun")
+                        local equippedGun = localChar:FindFirstChild("Gun")
+                        
+                        if backpackGun or equippedGun then
+                            pickedUp = true
+                            -- Equip the gun if it's in backpack
+                            if backpackGun then
+                                backpackGun.Parent = localChar
+                            end
+                            break
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end
+            
+            -- Notify result
+            if pickedUp then
+                Rayfield:Notify({
+                    Title = "Grab Gun",
+                    Content = "Successfully grabbed the gun!",
+                    Duration = 3
+                })
+            else
+                Rayfield:Notify({
+                    Title = "Grab Gun",
+                    Content = "Failed to grab gun",
+                    Duration = 3
+                })
+            end
         end
     end,
 })
