@@ -409,6 +409,54 @@ local MiscTab = Window:CreateTab("🛠️ Misc", 4483362458)
 -- Teleport Tab 🌀
 local TeleportTab = Window:CreateTab("🌀 Teleport", 4483362458)
 
+-- Teleport to Player Logic
+local function getPlayerList()
+    local players = {}
+    for _, player in ipairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
+            table.insert(players, player.Name)
+        end
+    end
+    return players
+end
+
+local PlayerDropdown = TeleportTab:CreateDropdown({
+    Name = "To player: ",
+    Options = getPlayerList(),
+    CurrentOption = {""},
+    MultipleOptions = false,
+    Flag = "PlayerTeleportDropdown",
+    Callback = function(Option)
+        local selectedPlayerName = Option[1]
+        local targetPlayer = game.Players:FindFirstChild(selectedPlayerName)
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local localChar = game.Players.LocalPlayer.Character
+            if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                localChar.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 3, 0)
+                Rayfield:Notify({
+                    Title = "Teleport",
+                    Content = "Teleported to " .. selectedPlayerName,
+                    Duration = 2
+                })
+            end
+        else
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Could not find player or character is missing.",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+-- Auto-update list
+local function updateDropdown()
+    PlayerDropdown:Refresh(getPlayerList(), true)
+end
+
+game.Players.PlayerAdded:Connect(updateDropdown)
+game.Players.PlayerRemoving:Connect(updateDropdown)
+
 -- Teleport to Sheriff
 TeleportTab:CreateButton({
     Name = "🔫 Teleport to Sheriff",
@@ -511,7 +559,7 @@ TeleportTab:CreateButton({
     end,
 })
 
--- Credits/Discord Tab 💬
+-- Misc Tab 🛠️ (Movement Section)
 MiscTab:CreateLabel("=== MOVEMENT ===")
 
 -- Anti-Cheat Bypass Toggle
@@ -786,10 +834,6 @@ MiscTab:CreateToggle({
             if getgenv().InfiniteJumpHeartbeat then
                 getgenv().InfiniteJumpHeartbeat:Disconnect()
                 getgenv().InfiniteJumpHeartbeat = nil
-            end
-            if getgenv().StatisticsOverlayConnection then
-                getgenv().StatisticsOverlayConnection:Disconnect()
-                getgenv().StatisticsOverlayConnection = nil
             end
         end
     end,
@@ -1146,6 +1190,9 @@ MiscTab:CreateToggle({
     end,
 })
 
+-- Credits/Discord Tab 💬
+local CreditsDiscordTab = Window:CreateTab("💬 Credits", 4483362458)
+
 -- Jassy Section ✨
 CreditsDiscordTab:CreateLabel("=== ❤ JASSY ❤ ===")
 
@@ -1198,7 +1245,6 @@ CreditsDiscordTab:CreateButton({
         getgenv().SpeedBoostEnabled = false
         getgenv().JumpPowerEnabled = false
         getgenv().InfiniteJump = false
-        getgenv().IsGrabbingGun = false
         getgenv().StatisticsOverlayEnabled = false
         
         -- Reset speed and jump to defaults
@@ -1211,47 +1257,21 @@ CreditsDiscordTab:CreateButton({
             end
         end)
         
-        -- Disconnect infinite jump
-        if getgenv().InfiniteJumpConnection then
-            getgenv().InfiniteJumpConnection:Disconnect()
-            getgenv().InfiniteJumpConnection = nil
-        end
-        if getgenv().InfiniteJumpHeartbeat then
-            getgenv().InfiniteJumpHeartbeat:Disconnect()
-            getgenv().InfiniteJumpHeartbeat = nil
-        end
+        -- Disconnect connections
+        if getgenv().InfiniteJumpConnection then getgenv().InfiniteJumpConnection:Disconnect() end
+        if getgenv().InfiniteJumpHeartbeat then getgenv().InfiniteJumpHeartbeat:Disconnect() end
         
         -- Clean up ESP
         pcall(function()
-            if workspace:FindFirstChild("MM2_RoleESP_Highlights") then
-                workspace:FindFirstChild("MM2_RoleESP_Highlights"):Destroy()
-            end
-            if workspace:FindFirstChild("MM2_NameESP") then
-                workspace:FindFirstChild("MM2_NameESP"):Destroy()
-            end
-            if workspace:FindFirstChild("MM2_GunESP") then
-                workspace:FindFirstChild("MM2_GunESP"):Destroy()
-            end
-        end)
-        
-        -- Clean up Statistics Overlay
-        pcall(function()
-            local overlay = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("StatisticsOverlay")
-            if overlay then
-                overlay:Destroy()
-            end
+            if game.CoreGui:FindFirstChild("MM2_RoleESP_Highlights") then game.CoreGui:FindFirstChild("MM2_RoleESP_Highlights"):Destroy() end
+            if game.CoreGui:FindFirstChild("MM2_NameESP") then game.CoreGui:FindFirstChild("MM2_NameESP"):Destroy() end
+            if game.CoreGui:FindFirstChild("MM2_GunESP") then game.CoreGui:FindFirstChild("MM2_GunESP"):Destroy() end
         end)
         
         -- Destroy UI
         if Rayfield then
             Rayfield:Destroy()
         end
-        
-        Rayfield:Notify({
-            Title = "Script Uninjected",
-            Content = "Script has been successfully uninjected!",
-            Duration = 5
-        })
     end,
 })
 
