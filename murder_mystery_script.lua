@@ -1,3 +1,4 @@
+
 -- Made by Jassy ❤
 -- Property of ScriptForge ❤
 -- Upgraded v2.0 with xScript Integration
@@ -459,95 +460,61 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Aimbot Function
-local function getClosestPlayer()
-    local cam = workspace.CurrentCamera
-    local closestPlayer = nil
-    local closestDistance = math.huge
-    
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
-                local humanoid = char:FindFirstChild("Humanoid")
-                
-                -- Skip dead players
-                if humanoid.Health > 0 then
-                    -- Use helper to check role (skip if targeting murderers only)
-                    local validTarget = true
-                    if getgenv().TargetMurderersOnly then
-                        if getPlayerRole(player) ~= "Murderer" then
-                            validTarget = false
-                        end
-                    end
+-- Simple Working Aimbot
+local closestTarget = nil
+
+RunService.RenderStepped:Connect(function()
+    if getgenv().AimbotEnabled then
+        local myHRP = getHRP()
+        if not myHRP then return end
+        
+        local closestDist = math.huge
+        closestTarget = nil
+        
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+                    local humanoid = char:FindFirstChild("Humanoid")
                     
-                    if validTarget then
-                        local head = char:FindFirstChild("Head")
-                        local torso = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
-                        local targetPart = head or torso
+                    if humanoid.Health > 0 then
+                        -- Check if we should target this player
+                        local shouldTarget = true
+                        if getgenv().TargetMurderersOnly then
+                            shouldTarget = (getPlayerRole(player) == "Murderer")
+                        end
                         
-                        if targetPart then
-                            local distance = (targetPart.Position - cam.CFrame.Position).Magnitude
-                            if distance < closestDistance and distance < 500 then
-                                -- Simple wall check
-                                local blocked = false
-                                pcall(function()
-                                    local ray = workspace:Raycast(cam.CFrame.Position, (targetPart.Position - cam.CFrame.Position))
-                                    if ray then blocked = true end
-                                end)
-                                
-                                if not blocked then
-                                    closestDistance = distance
-                                    closestPlayer = player
-                                end
+                        if shouldTarget then
+                            local targetHRP = char:FindFirstChild("HumanoidRootPart")
+                            local dist = (targetHRP.Position - myHRP.Position).Magnitude
+                            
+                            if dist < closestDist and dist < 800 then
+                                closestDist = dist
+                                closestTarget = player
                             end
                         end
                     end
                 end
             end
         end
-    end
-    
-    return closestPlayer
-end
-
--- Aimbot loop
-RunService.RenderStepped:Connect(function()
-    if getgenv().AimbotEnabled then
-        pcall(function()
-            local cam = workspace.CurrentCamera
-            local closestPlayer = getClosestPlayer()
-            
-            if closestPlayer then
-                local char = closestPlayer.Character
-                if char and char:FindFirstChild("Humanoid") then
-                    local humanoid = char:FindFirstChild("Humanoid")
-                    
-                    -- Check target is still alive
-                    if humanoid.Health > 0 then
-                        local head = char:FindFirstChild("Head")
-                        local torso = char:FindFirstChild("HumanoidRootPart") or char:FindFirstChild("UpperTorso") or char:FindFirstChild("Torso")
-                        local targetPart = head or torso
-                        
-                        if targetPart then
-                            local targetPos = targetPart.Position
-                            local smoothness = getgenv().AimbotSmoothness or 5
-                            
-                            -- Simple smooth aiming
-                            if smoothness <= 3 then
-                                -- Instant snap
-                                cam.CFrame = CFrame.lookAt(cam.CFrame.Position, targetPos)
-                            else
-                                -- Smooth aim
-                                local lookAt = CFrame.lookAt(cam.CFrame.Position, targetPos)
-                                local lerpAmount = 1 / smoothness
-                                cam.CFrame = cam.CFrame:Lerp(lookAt, lerpAmount)
-                            end
-                        end
-                    end
+        
+        -- Aim at the closest target
+        if closestTarget and closestTarget.Character then
+            local targetPart = closestTarget.Character:FindFirstChild("Head") or closestTarget.Character:FindFirstChild("HumanoidRootPart")
+            if targetPart then
+                local cam = workspace.CurrentCamera
+                local smoothness = getgenv().AimbotSmoothness or 5
+                
+                if smoothness <= 3 then
+                    -- Instant snap
+                    cam.CFrame = CFrame.new(cam.CFrame.Position, targetPart.Position)
+                else
+                    -- Smooth aim
+                    local targetCFrame = CFrame.new(cam.CFrame.Position, targetPart.Position)
+                    cam.CFrame = cam.CFrame:Lerp(targetCFrame, 0.05)
                 end
             end
-        end)
+        end
     end
 end)
 
