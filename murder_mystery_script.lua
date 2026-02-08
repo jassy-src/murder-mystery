@@ -1,3 +1,4 @@
+
 -- Made by Jassy ❤
 -- Property of ScriptForge ❤
 
@@ -307,8 +308,8 @@ workspace.DescendantRemoving:Connect(function(obj)
     end
 end)
 
--- Aimbot Tab 🎯
-local AimbotTab = Window:CreateTab("🎯 Aimbot", 4483362458)
+-- Aimbot Tab 🎯 (Sheriff only)
+local AimbotTab = Window:CreateTab("🎯 Aimbot (Sheriff only)", 4483362458)
 
 -- Aimbot Keybind Info
 AimbotTab:CreateLabel("🎖 Aimbot (Keybind: Q)")
@@ -327,7 +328,7 @@ AimbotTab:CreateSlider({
 
 AimbotTab:CreateToggle({
     Name = "🎯 Target Murderers Only",
-    CurrentValue = false,
+    CurrentValue = true,
     Callback = function(value)
         getgenv().TargetMurderersOnly = value
     end,
@@ -336,6 +337,7 @@ AimbotTab:CreateToggle({
 -- Aimbot Keybind (Q key)
 getgenv().AimbotEnabled = false -- Initialize aimbot state
 getgenv().AimbotSmoothness = 5 -- Initialize smoothness
+getgenv().TargetMurderersOnly = true -- Force murderer targeting by default
 
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
@@ -393,11 +395,17 @@ game:GetService("RunService").RenderStepped:Connect(function()
             local char = closestPlayer.Character
             if char and char:FindFirstChild("Head") then
                 local targetPos = char:FindFirstChild("Head").Position
-                local currentCFrame = camera.CFrame
-                local lookAt = CFrame.lookAt(currentCFrame.Position, targetPos)
-                
                 local smoothness = getgenv().AimbotSmoothness or 5
-                camera.CFrame = currentCFrame:Lerp(lookAt, 0.1 / smoothness)
+                
+                -- Aggressive lock-on - directly set CFrame to target with minimal smoothing
+                if smoothness <= 3 then
+                    -- Very aggressive mode - almost instant lock
+                    camera.CFrame = CFrame.lookAt(camera.CFrame.Position, targetPos)
+                else
+                    -- Less aggressive but still strong lock
+                    local lookAt = CFrame.lookAt(camera.CFrame.Position, targetPos)
+                    camera.CFrame = camera.CFrame:Lerp(lookAt, 0.3 / smoothness)
+                end
             end
         end
     end
@@ -1294,6 +1302,324 @@ MiscTab:CreateToggle({
         end
     end,
 })
+
+-- Leak murder/sheriff roles
+MiscTab:CreateButton({
+    Name = "[Leak murder/sheriff]",
+    Callback = function()
+        local murdererFound = false
+        local sheriffFound = false
+        local murdererName = "Unknown"
+        local sheriffName = "Unknown"
+        
+        -- Check all players to find murderer and sheriff
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer then
+                local char = player.Character
+                if char then
+                    local knife = char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
+                    local gun = char:FindFirstChild("Gun") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Gun"))
+                    
+                    if knife then
+                        murdererFound = true
+                        murdererName = player.Name
+                    elseif gun then
+                        sheriffFound = true
+                        sheriffName = player.Name
+                    end
+                end
+            end
+        end
+        
+        -- Create message to leak in chat
+        local leakMessage = ""
+        if murdererFound and sheriffFound then
+            leakMessage = murdererName .. " = murderer | " .. sheriffName .. " = sheriff"
+        elseif murdererFound then
+            leakMessage = murdererName .. " = murderer | Sheriff = Unknown"
+        elseif sheriffFound then
+            leakMessage = "Murderer = Unknown | " .. sheriffName .. " = sheriff"
+        else
+            leakMessage = "Murderer = Unknown | Sheriff = Unknown"
+        end
+        
+        -- Send message to chat - MM2 specific method
+        wait(0.1)
+        
+        -- Method 1: Standard Roblox chat
+        local chatRemote = game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+        if chatRemote and chatRemote:FindFirstChild("SayMessageRequest") then
+            chatRemote.SayMessageRequest:FireServer(leakMessage, "All")
+            return
+        end
+        
+        -- Method 2: Try game chat service
+        pcall(function()
+            game:GetService("Chat"):Chat(leakMessage)
+        end)
+        
+        -- Method 3: Try player chat with proper formatting
+        pcall(function()
+            game.Players.LocalPlayer:Chat(leakMessage)
+        end)
+        
+        -- Method 4: Try workspace chat event
+        pcall(function()
+            local chatEvent = workspace:FindFirstChild("ChatEvent")
+            if chatEvent then
+                chatEvent:FireServer(leakMessage)
+            end
+        end)
+    end,
+})
+
+-- Weapons Tab 🔫
+local WeaponsTab = Window:CreateTab("🔫 Weapons", 4483362458)
+
+-- Murderer Powers Section
+WeaponsTab:CreateLabel("=== MURDERER POWERS ===")
+
+WeaponsTab:CreateButton({
+    Name = "[TP to Gun]",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            -- Find dropped gun in workspace
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("Tool") and (obj.Name == "Gun" or obj:FindFirstChild("Gun")) and obj:FindFirstChild("Handle") then
+                    local handle = obj:FindFirstChild("Handle") or obj:FindFirstChildWhichIsA("BasePart")
+                    if handle then
+                        -- Teleport to gun
+                        localPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(handle.Position)
+                        Rayfield:Notify({
+                            Title = "Teleport",
+                            Content = "Teleported to gun!",
+                            Duration = 2
+                        })
+                        return
+                    end
+                end
+            end
+        end
+    end,
+})
+
+WeaponsTab:CreateButton({
+    Name = "[Murderer Kill All]",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("Knife") then
+            local knife = localPlayer.Character.Knife
+            local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+            
+            -- Kill all players except self
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Humanoid") then
+                    spawn(function()
+                        -- Teleport to player and stab
+                        local targetHrp = player.Character:FindFirstChild("HumanoidRootPart")
+                        if targetHrp then
+                            hrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 2)
+                            wait(0.1)
+                            knife:Activate()
+                            wait(0.1)
+                        end
+                    end)
+                end
+            end
+            
+            Rayfield:Notify({
+                Title = "Kill All",
+                Content = "Killing all players!",
+                Duration = 3
+            })
+        else
+            Rayfield:Notify({
+                Title = "Kill All",
+                Content = "You must be murderer!",
+                Duration = 3
+            })
+        end
+    end,
+})
+
+-- Sheriff Powers Section
+WeaponsTab:CreateLabel("=== SHERIFF POWERS ===")
+
+WeaponsTab:CreateButton({
+    Name = "[Kill Murderer as Sheriff]",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        local murderer = nil
+        
+        -- Find murderer
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= localPlayer and player.Character then
+                local knife = player.Character:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+                if knife then
+                    murderer = player
+                    break
+                end
+            end
+        end
+        
+        if murderer and murderer.Character and localPlayer.Character and localPlayer.Character:FindFirstChild("Gun") then
+            local gun = localPlayer.Character.Gun
+            local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+            
+            -- Kill murderer with multiple shots
+            spawn(function()
+                for i = 1, 5 do
+                    if murderer.Character and murderer.Character:FindFirstChild("HumanoidRootPart") then
+                        hrp.CFrame = murderer.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
+                        wait(0.1)
+                        gun:Activate()
+                        wait(0.2)
+                    end
+                end
+            end)
+            
+            Rayfield:Notify({
+                Title = "Sheriff Kill",
+                Content = "Killing murderer!",
+                Duration = 3
+            })
+        else
+            Rayfield:Notify({
+                Title = "Sheriff Kill",
+                Content = "Murderer not found or you're not sheriff!",
+                Duration = 3
+            })
+        end
+    end,
+})
+
+WeaponsTab:CreateButton({
+    Name = "[Sheriff Auto Aim With Keybind (E)]",
+    Callback = function()
+        getgenv().SheriffAutoAimEnabled = not getgenv().SheriffAutoAimEnabled
+        Rayfield:Notify({
+            Title = "Sheriff Auto Aim",
+            Content = getgenv().SheriffAutoAimEnabled and "Enabled" or "Disabled",
+            Duration = 2
+        })
+    end,
+})
+
+WeaponsTab:CreateButton({
+    Name = "[Sheriff Shoot]",
+    Callback = function()
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("Gun") then
+            local gun = localPlayer.Character.Gun
+            local murderer = nil
+            
+            -- Find murderer
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if player ~= localPlayer and player.Character then
+                    local knife = player.Character:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+                    if knife then
+                        murderer = player
+                        break
+                    end
+                end
+            end
+            
+            if murderer and murderer.Character then
+                local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local targetHrp = murderer.Character:FindFirstChild("HumanoidRootPart")
+                
+                if hrp and targetHrp then
+                    -- Teleport and shoot
+                    hrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 5)
+                    wait(0.1)
+                    gun:Activate()
+                    
+                    Rayfield:Notify({
+                        Title = "Sheriff Shoot",
+                        Content = "Shot at murderer!",
+                        Duration = 2
+                    })
+                end
+            end
+        else
+            Rayfield:Notify({
+                Title = "Sheriff Shoot",
+                Content = "You need a gun!",
+                Duration = 2
+            })
+        end
+    end,
+})
+
+-- Sheriff Auto Aim Function
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.E and getgenv().SheriffAutoAimEnabled then
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("Gun") then
+            local murderer = nil
+            
+            -- Find murderer
+            for _, player in ipairs(game.Players:GetPlayers()) do
+                if player ~= localPlayer and player.Character then
+                    local knife = player.Character:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+                    if knife then
+                        murderer = player
+                        break
+                    end
+                end
+            end
+            
+            if murderer and murderer.Character then
+                local hrp = localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local targetHrp = murderer.Character:FindFirstChild("HumanoidRootPart")
+                
+                if hrp and targetHrp then
+                    -- Auto aim at murderer
+                    hrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, 3)
+                    localPlayer.Character.Gun:Activate()
+                end
+            end
+        end
+    end
+end)
+
+-- Silent Aimbot Function
+game:GetService("RunService").RenderStepped:Connect(function()
+    if getgenv().SilentAimbotEnabled then
+        local localPlayer = game.Players.LocalPlayer
+        local mouse = localPlayer:GetMouse()
+        local camera = workspace.CurrentCamera
+        
+        for _, player in ipairs(game.Players:GetPlayers()) do
+            if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                local head = player.Character.Head
+                local vector, onScreen = camera:WorldToScreenPoint(head.Position)
+                
+                if onScreen then
+                    local distance = (Vector2.new(vector.X, vector.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude
+                    local fovRadius = (getgenv().SilentAimbotFOV or 90) * (camera.ViewportSize.Y / 2) / 90
+                    
+                    if distance <= fovRadius then
+                        -- Silent aim - modify mouse hit without moving camera
+                        local originalTarget = mouse.Target
+                        local originalHit = mouse.Hit
+                        
+                        -- Override mouse target to player head
+                        mouse.Target = head
+                        mouse.Hit = head.CFrame
+                        
+                        wait()
+                        
+                        -- Restore original
+                        mouse.Target = originalTarget
+                        mouse.Hit = originalHit
+                    end
+                end
+            end
+        end
+    end
+end)
 
 -- Credits/Discord Tab 💬
 local CreditsDiscordTab = Window:CreateTab("💬 Credits/Discord", 4483362458)
