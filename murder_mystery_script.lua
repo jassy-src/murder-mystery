@@ -464,7 +464,6 @@ local function getClosestPlayer()
     local cam = workspace.CurrentCamera
     local closestPlayer = nil
     local closestDistance = math.huge
-    local myChar = getLocalCharacter()
     
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
@@ -473,9 +472,7 @@ local function getClosestPlayer()
                 local humanoid = char:FindFirstChild("Humanoid")
                 
                 -- Skip dead players
-                if humanoid.Health <= 0 then
-                    -- Skip to next player
-                else
+                if humanoid.Health > 0 then
                     -- Use helper to check role (skip if targeting murderers only)
                     local validTarget = true
                     if getgenv().TargetMurderersOnly then
@@ -783,6 +780,108 @@ WeaponsTab:CreateButton({
         else
             Rayfield:Notify({ Title = "Sheriff Shoot", Content = "You need a gun!", Duration = 2 })
         end
+    end,
+})
+
+-- Fling Section
+WeaponsTab:CreateLabel("=== FLING ===")
+
+-- Fling helper function
+local function flingPlayer(target)
+    local char = getLocalCharacter()
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    
+    local hrp = char.HumanoidRootPart
+    local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
+    if not targetHrp then return end
+    
+    -- Create fling body velocity
+    local bav = Instance.new("BodyAngularVelocity")
+    bav.Name = "MM2Fling"
+    bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bav.P = math.huge
+    bav.AngularVelocity = Vector3.new(0, 99999, 0)
+    bav.Parent = hrp
+    
+    -- Teleport to target and apply force
+    hrp.CFrame = targetHrp.CFrame * CFrame.new(0, -2, 0)
+    
+    -- Remove after 2 seconds
+    game:GetService("Debris"):AddItem(bav, 2)
+    
+    Rayfield:Notify({
+        Title = "Fling",
+        Content = "Flinging " .. target.Name .. "!",
+        Duration = 2
+    })
+end
+
+-- Player dropdown for fling
+local FlingDropdown = WeaponsTab:CreateDropdown({
+    Name = "Fling Target: ",
+    Options = getPlayerList(),
+    CurrentOption = {""},
+    Callback = function(Option)
+        local target = Players:FindFirstChild(Option[1])
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            flingPlayer(target)
+        else
+            Rayfield:Notify({ Title = "Fling", Content = "Target not found!", Duration = 2 })
+        end
+    end,
+})
+
+-- Auto-update fling dropdown
+Players.PlayerAdded:Connect(function()
+    FlingDropdown:Refresh(getPlayerList(), true)
+end)
+Players.PlayerRemoving:Connect(function()
+    FlingDropdown:Refresh(getPlayerList(), true)
+end)
+
+-- Quick fling buttons
+WeaponsTab:CreateButton({
+    Name = "[Fling Murderer]",
+    Callback = function()
+        local murderer = findMurderer()
+        if murderer and murderer.Character then
+            flingPlayer(murderer)
+        else
+            Rayfield:Notify({ Title = "Fling", Content = "Murderer not found!", Duration = 2 })
+        end
+    end,
+})
+
+WeaponsTab:CreateButton({
+    Name = "[Fling Sheriff]",
+    Callback = function()
+        local sheriff = findSheriff()
+        if sheriff and sheriff.Character then
+            flingPlayer(sheriff)
+        else
+            Rayfield:Notify({ Title = "Fling", Content = "Sheriff not found!", Duration = 2 })
+        end
+    end,
+})
+
+WeaponsTab:CreateButton({
+    Name = "[Fling All Players]",
+    Callback = function()
+        local count = 0
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                spawn(function()
+                    flingPlayer(player)
+                end)
+                count = count + 1
+                task.wait(0.1) -- Small delay between flings
+            end
+        end
+        Rayfield:Notify({
+            Title = "Fling All",
+            Content = "Flinging " .. count .. " players!",
+            Duration = 3
+        })
     end,
 })
 
