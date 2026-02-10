@@ -451,12 +451,20 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.Q then
         getgenv().AimbotEnabled = not getgenv().AimbotEnabled
         
-        -- Show notification when toggled
-        Rayfield:Notify({
-            Title = "Aimbot",
-            Content = "Aimbot " .. (getgenv().AimbotEnabled and "Enabled" or "Disabled"),
-            Duration = 2
-        })
+        -- Show notification when toggled (only once per toggle)
+        if getgenv().AimbotEnabled then
+            Rayfield:Notify({
+                Title = "Aimbot",
+                Content = "Aimbot Enabled",
+                Duration = 1
+            })
+        else
+            Rayfield:Notify({
+                Title = "Aimbot", 
+                Content = "Aimbot Disabled",
+                Duration = 1
+            })
+        end
     end
 end)
 
@@ -466,7 +474,8 @@ local closestTarget = nil
 RunService.RenderStepped:Connect(function()
     if getgenv().AimbotEnabled then
         local myHRP = getHRP()
-        if not myHRP then return end
+        local cam = workspace.CurrentCamera
+        if not myHRP or not cam then return end
         
         local closestDist = math.huge
         closestTarget = nil
@@ -501,17 +510,17 @@ RunService.RenderStepped:Connect(function()
         -- Aim at the closest target
         if closestTarget and closestTarget.Character then
             local targetPart = closestTarget.Character:FindFirstChild("Head") or closestTarget.Character:FindFirstChild("HumanoidRootPart")
-            if targetPart then
-                local cam = workspace.CurrentCamera
+            if targetPart and targetPart.Position then
                 local smoothness = getgenv().AimbotSmoothness or 5
                 
                 if smoothness <= 3 then
                     -- Instant snap
                     cam.CFrame = CFrame.new(cam.CFrame.Position, targetPart.Position)
                 else
-                    -- Smooth aim
+                    -- Smooth aim with better lerp
                     local targetCFrame = CFrame.new(cam.CFrame.Position, targetPart.Position)
-                    cam.CFrame = cam.CFrame:Lerp(targetCFrame, 0.05)
+                    local lerpSpeed = 0.1 / smoothness -- Dynamic speed based on smoothness
+                    cam.CFrame = cam.CFrame:Lerp(targetCFrame, lerpSpeed)
                 end
             end
         end
@@ -747,108 +756,6 @@ WeaponsTab:CreateButton({
         else
             Rayfield:Notify({ Title = "Sheriff Shoot", Content = "You need a gun!", Duration = 2 })
         end
-    end,
-})
-
--- Fling Section
-WeaponsTab:CreateLabel("=== FLING ===")
-
--- Fling helper function
-local function flingPlayer(target)
-    local char = getLocalCharacter()
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-    
-    local hrp = char.HumanoidRootPart
-    local targetHrp = target.Character:FindFirstChild("HumanoidRootPart")
-    if not targetHrp then return end
-    
-    -- Create fling body velocity
-    local bav = Instance.new("BodyAngularVelocity")
-    bav.Name = "MM2Fling"
-    bav.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bav.P = math.huge
-    bav.AngularVelocity = Vector3.new(0, 99999, 0)
-    bav.Parent = hrp
-    
-    -- Teleport to target and apply force
-    hrp.CFrame = targetHrp.CFrame * CFrame.new(0, -2, 0)
-    
-    -- Remove after 2 seconds
-    game:GetService("Debris"):AddItem(bav, 2)
-    
-    Rayfield:Notify({
-        Title = "Fling",
-        Content = "Flinging " .. target.Name .. "!",
-        Duration = 2
-    })
-end
-
--- Player dropdown for fling
-local FlingDropdown = WeaponsTab:CreateDropdown({
-    Name = "Fling Target: ",
-    Options = getPlayerList(),
-    CurrentOption = {""},
-    Callback = function(Option)
-        local target = Players:FindFirstChild(Option[1])
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            flingPlayer(target)
-        else
-            Rayfield:Notify({ Title = "Fling", Content = "Target not found!", Duration = 2 })
-        end
-    end,
-})
-
--- Auto-update fling dropdown
-Players.PlayerAdded:Connect(function()
-    FlingDropdown:Refresh(getPlayerList(), true)
-end)
-Players.PlayerRemoving:Connect(function()
-    FlingDropdown:Refresh(getPlayerList(), true)
-end)
-
--- Quick fling buttons
-WeaponsTab:CreateButton({
-    Name = "[Fling Murderer]",
-    Callback = function()
-        local murderer = findMurderer()
-        if murderer and murderer.Character then
-            flingPlayer(murderer)
-        else
-            Rayfield:Notify({ Title = "Fling", Content = "Murderer not found!", Duration = 2 })
-        end
-    end,
-})
-
-WeaponsTab:CreateButton({
-    Name = "[Fling Sheriff]",
-    Callback = function()
-        local sheriff = findSheriff()
-        if sheriff and sheriff.Character then
-            flingPlayer(sheriff)
-        else
-            Rayfield:Notify({ Title = "Fling", Content = "Sheriff not found!", Duration = 2 })
-        end
-    end,
-})
-
-WeaponsTab:CreateButton({
-    Name = "[Fling All Players]",
-    Callback = function()
-        local count = 0
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                spawn(function()
-                    flingPlayer(player)
-                end)
-                count = count + 1
-                task.wait(0.1) -- Small delay between flings
-            end
-        end
-        Rayfield:Notify({
-            Title = "Fling All",
-            Content = "Flinging " .. count .. " players!",
-            Duration = 3
-        })
     end,
 })
 
@@ -1293,6 +1200,45 @@ MiscTab:CreateSlider({
 
 -- Visual Section
 MiscTab:CreateLabel("=== VISUAL ===")
+
+-- X-Ray (from Infinite Yield)
+MiscTab:CreateToggle({
+    Name = "[X-Ray]",
+    CurrentValue = false,
+    Callback = function(value)
+        getgenv().XRayEnabled = value
+        if value then
+            -- Store original transparencies
+            getgenv().OriginalTransparencies = {}
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    getgenv().OriginalTransparencies[part] = part.Transparency
+                    part.Transparency = 0.6
+                end
+            end
+            Rayfield:Notify({
+                Title = "X-Ray",
+                Content = "X-Ray enabled!",
+                Duration = 2
+            })
+        else
+            -- Restore original transparencies
+            if getgenv().OriginalTransparencies then
+                for part, transparency in pairs(getgenv().OriginalTransparencies) do
+                    if part and part.Parent then
+                        part.Transparency = transparency
+                    end
+                end
+                getgenv().OriginalTransparencies = nil
+            end
+            Rayfield:Notify({
+                Title = "X-Ray",
+                Content = "X-Ray disabled!",
+                Duration = 2
+            })
+        end
+    end,
+})
 
 -- Shaders
 MiscTab:CreateToggle({
